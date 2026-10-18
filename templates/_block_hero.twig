@@ -1,0 +1,14 @@
+{# Receives block: eyebrow, heading, subheading, primary_label/primary_url, secondary_label/secondary_url.
+   The heading, eyebrow and subheading are edited on the spot; the two buttons (their target is not
+   text to click into) only through the "Bearbeiten" panel - see inline/_block.twig. #}
+<section class="landing-block landing-block-hero">
+    {% if block.eyebrow or edit_mode %}<p class="landing-eyebrow" data-field="eyebrow">{{ block.eyebrow }}</p>{% endif %}
+    <h1 data-field="heading">{{ block.heading }}</h1>
+    {% if block.subheading or edit_mode %}<p class="landing-lead" data-field="subheading">{{ block.subheading }}</p>{% endif %}
+    {% if (block.primary_label and block.primary_url) or (block.secondary_label and block.secondary_url) %}
+        <div class="landing-buttons">
+            {% if block.primary_label and block.primary_url %}<a class="btn landing-btn-primary" href="{{ url(block.primary_url) }}">{{ block.primary_label }}</a>{% endif %}
+            {% if block.secondary_label and block.secondary_url %}<a class="btn landing-btn-ghost" href="{{ url(block.secondary_url) }}">{{ block.secondary_label }}</a>{% endif %}
+        </div>
+    {% endif %}
+</section>

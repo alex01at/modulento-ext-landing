@@ -7,6 +7,7 @@
 
 <section class="card-box">
     <p>{{ trans('landing.admin.intro') }}</p>
+    <p><a href="{{ url('/landing') }}?edit=1">{{ trans('landing.admin.edit_on_page') }}</a></p>
 </section>
 
 {# Only the language the administration is in is edited here, like everywhere else - the core's
@@ -21,6 +22,10 @@
         <label class="checkbox">
             <input type="checkbox" name="published" value="1" {{ published ? 'checked' }}>
             <span>{{ trans('landing.admin.published') }}</span>
+        </label>
+        <label class="checkbox">
+            <input type="checkbox" name="is_home" value="1" {{ is_home ? 'checked' }}>
+            <span>{{ trans('landing.admin.is_home') }}</span>
         </label>
 
         <fieldset class="home-language" lang="{{ locale }}">
@@ -53,50 +58,7 @@
                         </summary>
 
                         <div class="menu-item-body">
-                            {% if block.type == 'hero' %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'eyebrow', value: block.eyebrow[locale] ?? ''} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'subheading', value: block.subheading[locale] ?? ''} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'primary_label', value: block.primary_label[locale] ?? ''} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'primary_url', value: block.primary_url ?? '', plain: true} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'secondary_label', value: block.secondary_label[locale] ?? ''} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'secondary_url', value: block.secondary_url ?? '', plain: true} only %}
-                            {% elseif block.type == 'stats' %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
-                                {% for n in 0..max_items - 1 %}
-                                    <div class="field-grid">
-                                        {% include '@landing/admin/_item_field.twig' with {id: id, n: n, field: 'value', value: block.items[n].value ?? '', plain: true} only %}
-                                        {% include '@landing/admin/_item_field.twig' with {id: id, n: n, field: 'label', value: block.items[n].label[locale] ?? ''} only %}
-                                    </div>
-                                {% endfor %}
-                            {% elseif block.type == 'cards' %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'intro', value: block.intro[locale] ?? ''} only %}
-                                {% for n in 0..max_items - 1 %}
-                                    <fieldset class="home-language">
-                                        <legend>{{ trans('landing.admin.item', {number: n + 1}) }}</legend>
-                                        <div class="field-grid">
-                                            {% include '@landing/admin/_item_field.twig' with {id: id, n: n, field: 'tag', value: block.items[n].tag[locale] ?? ''} only %}
-                                            {% include '@landing/admin/_item_field.twig' with {id: id, n: n, field: 'heading', value: block.items[n].heading[locale] ?? ''} only %}
-                                        </div>
-                                        <div class="field">
-                                            <label for="field-{{ id }}-{{ n }}-text">{{ trans('landing.field.text') }}</label>
-                                            <textarea id="field-{{ id }}-{{ n }}-text" name="blocks[{{ id }}][items][{{ n }}][text]" rows="2" maxlength="200">{{ block.items[n].text[locale] ?? '' }}</textarea>
-                                        </div>
-                                    </fieldset>
-                                {% endfor %}
-                            {% elseif block.type == 'text' %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
-                                <div class="field">
-                                    <label for="field-{{ id }}-body">{{ trans('landing.field.body') }}</label>
-                                    <textarea id="field-{{ id }}-body" name="blocks[{{ id }}][body]" rows="10" lang="{{ locale }}" data-editor="{{ editor() }}">{{ block.body[locale] ?? '' }}</textarea>
-                                </div>
-                            {% elseif block.type == 'cta' %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'text', value: block.text[locale] ?? ''} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'button_label', value: block.button_label[locale] ?? ''} only %}
-                                {% include '@landing/admin/_field.twig' with {id: id, field: 'button_url', value: block.button_url ?? '', plain: true} only %}
-                            {% endif %}
+                            {% include '@landing/admin/_fields.twig' with {id: id, block: block, locale: locale, max_items: max_items} only %}
 
                             <div class="button-row">
                                 <button type="submit" name="action" value="up:{{ id }}" class="btn-outline btn-sm">{{ trans('core.home.up') }}</button>

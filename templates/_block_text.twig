@@ -1,0 +1,6 @@
+{# Receives block: heading, body. The body is rich text (data-html) - cleaned to a fixed set of
+   HTML elements when it was saved, same as the core's own content pages. #}
+<section class="landing-block landing-block-text">
+    {% if block.heading or edit_mode %}<h2 data-field="heading">{{ block.heading }}</h2>{% endif %}
+    <div class="landing-text" data-field="body" data-html="1">{{ block.body|raw }}</div>
+</section>

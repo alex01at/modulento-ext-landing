@@ -1,0 +1,14 @@
+{# Receives block: heading, items (each: index, value, label). Every item's value and label are
+   edited on the spot, by its position - see inline/_block.twig for the "Bearbeiten" panel that
+   still has them too, which is how a slot that is not shown at all yet gets its first text. #}
+<section class="landing-block landing-block-stats">
+    {% if block.heading or edit_mode %}<h2 data-field="heading">{{ block.heading }}</h2>{% endif %}
+    <div class="landing-stats">
+        {% for item in block.items %}
+            <div class="landing-stat">
+                <div class="landing-stat-value" data-field="items.{{ item.index }}.value">{{ item.value }}</div>
+                <div class="landing-stat-label" data-field="items.{{ item.index }}.label">{{ item.label }}</div>
+            </div>
+        {% endfor %}
+    </div>
+</section>

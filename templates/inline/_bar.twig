@@ -1,0 +1,22 @@
+{# The bar above the blocks, shown to whoever can manage this page. Receives (from the parent
+   context) can_edit, edit_mode, block_types. #}
+{% if can_edit %}
+<div class="inline-bar" role="region" aria-label="{{ trans('core.inline.title') }}" data-saving="{{ trans('core.inline.saving') }}" data-saved="{{ trans('core.inline.saved') }}" data-failed="{{ trans('core.inline.failed') }}" data-editor-labels="{{ editor() }}">
+    {% if edit_mode %}
+        <p><strong>{{ trans('core.inline.editing') }}</strong> <a href="{{ url('/landing') }}">{{ trans('core.inline.done') }}</a></p>
+        <form method="post" action="{{ url('/admin/landing') }}" class="inline-add">
+            {{ csrf_field() }}
+            <input type="hidden" name="return" value="{{ current_path() }}?edit=1">
+            <label for="inline-add-type">{{ trans('landing.admin.add') }}</label>
+            <select id="inline-add-type" name="new_type">
+                {% for type in block_types %}
+                    <option value="{{ type }}">{{ trans('landing.block.' ~ type) }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" name="action" value="add">{{ trans('landing.admin.add') }}</button>
+        </form>
+    {% else %}
+        <p><a href="{{ url(current_path()) }}?edit=1">{{ trans('core.inline.start') }}</a></p>
+    {% endif %}
+</div>
+{% endif %}

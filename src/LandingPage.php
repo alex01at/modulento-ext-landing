@@ -14,17 +14,54 @@ use PDO;
  * blocks - the same idea the core's own CustomMenu and HomeLayout already
  * use for an ordered list of entries with per-language texts, just kept in
  * this addon's own table. Every block has an id (a short random hex string,
- * stable across edits so the admin form can address one without reordering
- * the rest), a type, "enabled", and whatever fields its type needs below.
+ * stable across edits), a type, "enabled", and whatever fields SCHEMA names
+ * for that type.
+ *
+ * SCHEMA drives every operation below (cleaning, resolving to one language,
+ * the single-field edit a click on the live page sends) instead of a
+ * switch per type repeated five times, so a new block type is one entry
+ * here plus one Twig partial - nothing else has to change by hand.
+ * A field's kind is one of:
+ *   "text" - a short value, per language (the stored shape is {locale: value})
+ *   "body" - a longer value, per language, cleaned to a fixed set of HTML
+ *            elements (HtmlSanitizer, the same one the core's content pages use)
+ *   "raw"  - a short value with no language of its own (e.g. "0 %")
+ *   "url"  - a path of this site or a secure address elsewhere, no language
+ * "items" (where present) is itself a schema of the same kind, applied to
+ * each of up to MAX_ITEMS repeated rows.
  */
 final class LandingPage
 {
-    public const BLOCK_TYPES = ['hero', 'stats', 'cards', 'text', 'cta'];
+    private const SCHEMA = [
+        'hero' => [
+            'eyebrow' => 'text', 'heading' => 'text', 'subheading' => 'text',
+            'primary_label' => 'text', 'primary_url' => 'url',
+            'secondary_label' => 'text', 'secondary_url' => 'url',
+        ],
+        'stats' => [
+            'heading' => 'text',
+            'items' => ['value' => 'raw', 'label' => 'text'],
+        ],
+        'cards' => [
+            'heading' => 'text', 'intro' => 'text',
+            'items' => ['tag' => 'text', 'heading' => 'text', 'text' => 'text'],
+        ],
+        'text' => [
+            'heading' => 'text', 'body' => 'body',
+        ],
+        'cta' => [
+            'heading' => 'text', 'text' => 'text', 'button_label' => 'text', 'button_url' => 'url',
+        ],
+    ];
+
     public const MAX_BLOCKS = 20;
     public const MAX_ITEMS = 6;
     private const MAX_TEXT = 200;
     private const MAX_BODY = 20000;
     private const ROW_ID = 1;
+
+    /** @var list<string> */
+    public const BLOCK_TYPES = ['hero', 'stats', 'cards', 'text', 'cta'];
 
     public function __construct(private PDO $db)
     {
@@ -51,10 +88,9 @@ final class LandingPage
     }
 
     /**
-     * Stores the page exactly as the admin form sent it, after cleaning
-     * every field - a block of a type this addon no longer knows (should
-     * not happen, nothing removes BLOCK_TYPES) is dropped rather than kept
-     * half-understood.
+     * Stores the page exactly as given, after cleaning every field - a
+     * block of a type SCHEMA no longer knows (should not happen) is dropped
+     * rather than kept half-understood.
      *
      * @param array<string, array<string, string>> $meta locale => {title, meta_description}
      * @param list<array<string, mixed>> $blocks
@@ -74,7 +110,7 @@ final class LandingPage
         foreach (array_slice($blocks, 0, self::MAX_BLOCKS) as $block) {
             $type = (string) ($block['type'] ?? '');
             $id = (string) ($block['id'] ?? '');
-            if (!in_array($type, self::BLOCK_TYPES, true) || !preg_match('/^[a-f0-9]{8}$/', $id)) {
+            if (!isset(self::SCHEMA[$type]) || !preg_match('/^[a-f0-9]{8}$/', $id)) {
                 continue;
             }
             $cleanBlocks[] = ['id' => $id, 'type' => $type, 'enabled' => (bool) ($block['enabled'] ?? false)] + self::cleanFields($type, $block);
@@ -93,12 +129,20 @@ final class LandingPage
         $stmt->execute(['id' => self::ROW_ID, 'published' => $published ? 1 : 0, 'content' => $content, 'now' => Clock::now()]);
     }
 
+    /** A new, empty block of one type. */
+    public static function newBlock(string $type): array
+    {
+        $type = isset(self::SCHEMA[$type]) ? $type : self::BLOCK_TYPES[0];
+
+        return ['id' => bin2hex(random_bytes(4)), 'type' => $type, 'enabled' => true] + self::cleanFields($type, []);
+    }
+
     /**
      * The stored block with one language's fields replaced by what the
      * form posted for it - every other language's text, and anything not
      * tied to a language (a URL), stays as it was. What the controller
-     * calls for every block the form named, before handing the whole list
-     * to save().
+     * calls for every block the plain form named, before handing the
+     * whole list to save().
      *
      * @param array<string, mixed> $stored the block as currently stored (id/type/enabled plus its fields)
      * @param array<string, mixed> $posted this block's $_POST entry, one language's values
@@ -106,119 +150,142 @@ final class LandingPage
      */
     public static function applyLocaleEdit(array $stored, string $locale, array $posted): array
     {
-        $overlay = function (string $field, $value) use ($stored, $locale): array {
-            $texts = is_array($stored[$field] ?? null) ? $stored[$field] : [];
-            $texts[$locale] = self::text((string) $value);
-
-            return $texts;
-        };
-
-        switch ((string) ($stored['type'] ?? '')) {
-            case 'hero':
-                return [
-                    'eyebrow' => $overlay('eyebrow', $posted['eyebrow'] ?? ''),
-                    'heading' => $overlay('heading', $posted['heading'] ?? ''),
-                    'subheading' => $overlay('subheading', $posted['subheading'] ?? ''),
-                    'primary_label' => $overlay('primary_label', $posted['primary_label'] ?? ''),
-                    'primary_url' => self::url((string) ($posted['primary_url'] ?? '')),
-                    'secondary_label' => $overlay('secondary_label', $posted['secondary_label'] ?? ''),
-                    'secondary_url' => self::url((string) ($posted['secondary_url'] ?? '')),
-                ];
-            case 'stats':
-                return [
-                    'heading' => $overlay('heading', $posted['heading'] ?? ''),
-                    'items' => self::overlayItems(
-                        is_array($stored['items'] ?? null) ? $stored['items'] : [],
-                        is_array($posted['items'] ?? null) ? $posted['items'] : [],
-                        $locale,
-                        ['value' => 'plain', 'label' => 'text']
-                    ),
-                ];
-            case 'cards':
-                return [
-                    'heading' => $overlay('heading', $posted['heading'] ?? ''),
-                    'intro' => $overlay('intro', $posted['intro'] ?? ''),
-                    'items' => self::overlayItems(
-                        is_array($stored['items'] ?? null) ? $stored['items'] : [],
-                        is_array($posted['items'] ?? null) ? $posted['items'] : [],
-                        $locale,
-                        ['tag' => 'text', 'heading' => 'text', 'text' => 'text']
-                    ),
-                ];
-            case 'text':
-                $body = is_array($stored['body'] ?? null) ? $stored['body'] : [];
-                $body[$locale] = HtmlSanitizer::clean(mb_substr((string) ($posted['body'] ?? ''), 0, self::MAX_BODY));
-
-                return ['heading' => $overlay('heading', $posted['heading'] ?? ''), 'body' => $body];
-            case 'cta':
-                return [
-                    'heading' => $overlay('heading', $posted['heading'] ?? ''),
-                    'text' => $overlay('text', $posted['text'] ?? ''),
-                    'button_label' => $overlay('button_label', $posted['button_label'] ?? ''),
-                    'button_url' => self::url((string) ($posted['button_url'] ?? '')),
-                ];
-            default:
-                return $stored;
-        }
-    }
-
-    /**
-     * @param list<array<string, mixed>> $storedItems
-     * @param list<array<string, mixed>> $postedItems
-     * @param array<string, string> $fields field name => "plain" or "text" (per locale)
-     * @return list<array<string, mixed>>
-     */
-    private static function overlayItems(array $storedItems, array $postedItems, string $locale, array $fields): array
-    {
+        $schema = self::SCHEMA[(string) ($stored['type'] ?? '')] ?? [];
         $result = [];
-        foreach (array_slice($postedItems, 0, self::MAX_ITEMS) as $i => $posted) {
-            if (!is_array($posted)) {
+
+        foreach ($schema as $field => $kind) {
+            if ($field === 'items') {
                 continue;
             }
-            $storedItem = is_array($storedItems[$i] ?? null) ? $storedItems[$i] : [];
-            $row = [];
-            foreach ($fields as $field => $kind) {
-                if ($kind === 'plain') {
-                    $row[$field] = self::text((string) ($posted[$field] ?? ''));
-                } else {
-                    $texts = is_array($storedItem[$field] ?? null) ? $storedItem[$field] : [];
-                    $texts[$locale] = self::text((string) ($posted[$field] ?? ''));
-                    $row[$field] = $texts;
+            $result[$field] = self::overlayOne($kind, $stored[$field] ?? null, $locale, $posted[$field] ?? '');
+        }
+
+        if (is_array($schema['items'] ?? null)) {
+            $storedItems = is_array($stored['items'] ?? null) ? $stored['items'] : [];
+            $postedItems = is_array($posted['items'] ?? null) ? $posted['items'] : [];
+            $result['items'] = [];
+            foreach (array_slice($postedItems, 0, self::MAX_ITEMS) as $i => $item) {
+                if (!is_array($item)) {
+                    continue;
                 }
+                $storedItem = is_array($storedItems[$i] ?? null) ? $storedItems[$i] : [];
+                $row = [];
+                foreach ($schema['items'] as $field => $kind) {
+                    $row[$field] = self::overlayOne($kind, $storedItem[$field] ?? null, $locale, $item[$field] ?? '');
+                }
+                $result['items'][] = $row;
             }
-            $result[] = $row;
         }
 
         return $result;
     }
 
-    /** A new, empty block of one type. */
-    public static function newBlock(string $type): array
+    /** One field's stored value with $locale's text replaced by $posted (a "text"/"body"), or just cleaned ("raw"/"url"). */
+    private static function overlayOne(string $kind, $stored, string $locale, $posted)
     {
-        return ['id' => bin2hex(random_bytes(4)), 'type' => in_array($type, self::BLOCK_TYPES, true) ? $type : self::BLOCK_TYPES[0], 'enabled' => true] + self::emptyFields($type);
+        if ($kind === 'text' || $kind === 'body') {
+            $texts = is_array($stored) ? $stored : [];
+            $texts[$locale] = self::cleanValue($kind, (string) $posted);
+
+            return $texts;
+        }
+
+        return self::cleanValue($kind, (string) $posted);
+    }
+
+    /**
+     * One field of one block, saved on its own from a click on the live
+     * page - the field a block's own Twig partial names with data-field,
+     * e.g. "heading" or, inside a repeated row, "items.2.label". Returns
+     * the cleaned value to show in its place, or null when the block or
+     * the field does not exist (nothing is saved then).
+     */
+    public function setField(string $blockId, string $locale, string $field, string $value): ?string
+    {
+        $page = $this->get();
+        $index = null;
+        foreach ($page['blocks'] as $i => $block) {
+            if ($block['id'] === $blockId) {
+                $index = $i;
+                break;
+            }
+        }
+        if ($index === null) {
+            return null;
+        }
+
+        $block = $page['blocks'][$index];
+        $schema = self::SCHEMA[(string) ($block['type'] ?? '')] ?? [];
+
+        if (preg_match('/^items\.(\d+)\.([a-z_]+)$/', $field, $match) === 1) {
+            $itemIndex = (int) $match[1];
+            $subfield = $match[2];
+            $itemSchema = $schema['items'] ?? null;
+            if (!is_array($itemSchema) || !isset($itemSchema[$subfield]) || $itemIndex < 0 || $itemIndex >= self::MAX_ITEMS) {
+                return null;
+            }
+
+            $items = is_array($block['items'] ?? null) ? $block['items'] : [];
+            while (count($items) <= $itemIndex) {
+                $items[] = [];
+            }
+            $clean = self::cleanValue($itemSchema[$subfield], $value);
+            $items[$itemIndex][$subfield] = self::overlayOne($itemSchema[$subfield], $items[$itemIndex][$subfield] ?? null, $locale, $value);
+            $block['items'] = $items;
+        } else {
+            if (!isset($schema[$field]) || !is_string($schema[$field])) {
+                return null;
+            }
+            $clean = self::cleanValue($schema[$field], $value);
+            $block[$field] = self::overlayOne($schema[$field], $block[$field] ?? null, $locale, $value);
+        }
+
+        $page['blocks'][$index] = $block;
+        $this->save($page['published'], $page['meta'], $page['blocks']);
+
+        return $clean;
     }
 
     /**
      * The page in one language: every field resolved to that language (its
      * own text, else the site's default language), enabled blocks only,
      * and a block left out once resolving leaves it without what it needs
-     * to show at all (see blockHasContent()).
+     * to show at all (see blockHasContent()). What the public page renders.
      *
      * @return array{title: string, meta_description: string, blocks: list<array<string, mixed>>}
      */
     public function view(string $locale, string $default): array
+    {
+        return $this->resolvedPage($locale, $default, forEditing: false);
+    }
+
+    /**
+     * Every block, enabled or not, every item slot up to MAX_ITEMS whether
+     * filled in or not - what the page shows an administrator editing it
+     * in place, so an empty slot is still there to click into.
+     *
+     * @return array{title: string, meta_description: string, blocks: list<array<string, mixed>>}
+     */
+    public function editView(string $locale, string $default): array
+    {
+        return $this->resolvedPage($locale, $default, forEditing: true);
+    }
+
+    /** @return array{title: string, meta_description: string, blocks: list<array<string, mixed>>} */
+    private function resolvedPage(string $locale, string $default, bool $forEditing): array
     {
         $page = $this->get();
         $meta = (array) ($page['meta'][$locale] ?? $page['meta'][$default] ?? []);
 
         $blocks = [];
         foreach ($page['blocks'] as $block) {
-            if (!($block['enabled'] ?? false)) {
+            if (!$forEditing && !($block['enabled'] ?? false)) {
                 continue;
             }
-            $resolved = self::resolveFields((string) $block['type'], $block, $locale, $default);
-            if (self::blockHasContent((string) $block['type'], $resolved)) {
-                $blocks[] = ['type' => $block['type']] + $resolved;
+            $type = (string) ($block['type'] ?? '');
+            $resolved = self::resolveFields($type, $block, $locale, $default, $forEditing);
+            if ($forEditing || self::blockHasContent($type, $resolved)) {
+                $blocks[] = ['id' => (string) ($block['id'] ?? ''), 'type' => $type, 'enabled' => (bool) ($block['enabled'] ?? false)] + $resolved;
             }
         }
 
@@ -227,6 +294,125 @@ final class LandingPage
             'meta_description' => (string) ($meta['meta_description'] ?? ''),
             'blocks' => $blocks,
         ];
+    }
+
+    /** @return array<string, mixed> every field of this block, resolved to one language */
+    private static function resolveFields(string $type, array $block, string $locale, string $default, bool $all): array
+    {
+        $schema = self::SCHEMA[$type] ?? [];
+        $pick = static function ($raw) use ($locale, $default): string {
+            $texts = is_array($raw) ? $raw : [];
+
+            return (string) ($texts[$locale] ?? $texts[$default] ?? ($texts !== [] ? reset($texts) : ''));
+        };
+
+        $result = [];
+        foreach ($schema as $field => $kind) {
+            if ($field === 'items') {
+                continue;
+            }
+            $result[$field] = $kind === 'text' || $kind === 'body' ? $pick($block[$field] ?? null) : (string) ($block[$field] ?? '');
+        }
+
+        if (is_array($schema['items'] ?? null)) {
+            $rawItems = is_array($block['items'] ?? null) ? $block['items'] : [];
+            $slots = $all ? self::MAX_ITEMS : count($rawItems);
+            $items = [];
+            for ($i = 0; $i < $slots; $i++) {
+                $item = is_array($rawItems[$i] ?? null) ? $rawItems[$i] : [];
+                $row = ['index' => $i];
+                foreach ($schema['items'] as $field => $kind) {
+                    $row[$field] = $kind === 'text' || $kind === 'body' ? $pick($item[$field] ?? null) : (string) ($item[$field] ?? '');
+                }
+                if ($all || self::itemHasContent($row, array_keys($schema['items']))) {
+                    $items[] = $row;
+                }
+            }
+            $result['items'] = $items;
+        }
+
+        return $result;
+    }
+
+    /** @param list<string> $fields */
+    private static function itemHasContent(array $row, array $fields): bool
+    {
+        foreach ($fields as $field) {
+            if (($row[$field] ?? '') !== '') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Whether a resolved block still has enough to show - an empty one is left out rather than shown blank. */
+    private static function blockHasContent(string $type, array $resolved): bool
+    {
+        return match ($type) {
+            'hero' => $resolved['heading'] !== '',
+            'stats', 'cards' => $resolved['items'] !== [],
+            'text' => $resolved['body'] !== '',
+            'cta' => $resolved['heading'] !== '' && $resolved['button_label'] !== '' && $resolved['button_url'] !== '',
+            default => false,
+        };
+    }
+
+    /** @return array<string, mixed> the fields SCHEMA names for this type, cleaned */
+    private static function cleanFields(string $type, array $block): array
+    {
+        $schema = self::SCHEMA[$type] ?? [];
+        $result = [];
+
+        foreach ($schema as $field => $kind) {
+            if ($field === 'items') {
+                continue;
+            }
+            $result[$field] = $kind === 'text' || $kind === 'body'
+                ? self::cleanLocalizedMap($block[$field] ?? null, $kind)
+                : self::cleanValue($kind, $block[$field] ?? '');
+        }
+
+        if (is_array($schema['items'] ?? null)) {
+            $items = is_array($block['items'] ?? null) ? array_slice($block['items'], 0, self::MAX_ITEMS) : [];
+            $result['items'] = [];
+            foreach ($items as $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+                $row = [];
+                foreach ($schema['items'] as $field => $kind) {
+                    $row[$field] = $kind === 'text' || $kind === 'body'
+                        ? self::cleanLocalizedMap($item[$field] ?? null, $kind)
+                        : self::cleanValue($kind, $item[$field] ?? '');
+                }
+                $result['items'][] = $row;
+            }
+        }
+
+        return $result;
+    }
+
+    /** @return array<string, string> */
+    private static function cleanLocalizedMap($raw, string $kind): array
+    {
+        $texts = is_array($raw) ? $raw : [];
+        $clean = [];
+        foreach ($texts as $locale => $value) {
+            $clean[(string) $locale] = self::cleanValue($kind, $value);
+        }
+
+        return $clean;
+    }
+
+    private static function cleanValue(string $kind, $value): string
+    {
+        return match ($kind) {
+            'raw', 'text' => self::text((string) $value),
+            'url' => self::url((string) $value),
+            'body' => HtmlSanitizer::clean(mb_substr((string) $value, 0, self::MAX_BODY)),
+            default => '',
+        };
     }
 
     private static function text(string $value): string
@@ -241,155 +427,5 @@ final class LandingPage
         $value = trim($value);
 
         return CustomMenu::validPath($value) ? $value : '';
-    }
-
-    /** Fields every block type shares: a text per locale, keyed by field name. */
-    private static function localized(array $block, string $field): array
-    {
-        $texts = is_array($block[$field] ?? null) ? $block[$field] : [];
-        $clean = [];
-        foreach ($texts as $locale => $value) {
-            $clean[(string) $locale] = self::text((string) $value);
-        }
-
-        return $clean;
-    }
-
-    /** @return array<string, mixed> the fields this block type stores, cleaned */
-    private static function cleanFields(string $type, array $block): array
-    {
-        switch ($type) {
-            case 'hero':
-                return [
-                    'eyebrow' => self::localized($block, 'eyebrow'),
-                    'heading' => self::localized($block, 'heading'),
-                    'subheading' => self::localized($block, 'subheading'),
-                    'primary_label' => self::localized($block, 'primary_label'),
-                    'primary_url' => self::url((string) ($block['primary_url'] ?? '')),
-                    'secondary_label' => self::localized($block, 'secondary_label'),
-                    'secondary_url' => self::url((string) ($block['secondary_url'] ?? '')),
-                ];
-            case 'stats':
-                return [
-                    'heading' => self::localized($block, 'heading'),
-                    'items' => self::cleanItems($block, ['value' => 'plain', 'label' => 'text']),
-                ];
-            case 'cards':
-                return [
-                    'heading' => self::localized($block, 'heading'),
-                    'intro' => self::localized($block, 'intro'),
-                    'items' => self::cleanItems($block, ['tag' => 'text', 'heading' => 'text', 'text' => 'text']),
-                ];
-            case 'text':
-                return [
-                    'heading' => self::localized($block, 'heading'),
-                    'body' => array_map(
-                        fn ($value) => HtmlSanitizer::clean(mb_substr((string) $value, 0, self::MAX_BODY)),
-                        is_array($block['body'] ?? null) ? $block['body'] : []
-                    ),
-                ];
-            case 'cta':
-                return [
-                    'heading' => self::localized($block, 'heading'),
-                    'text' => self::localized($block, 'text'),
-                    'button_label' => self::localized($block, 'button_label'),
-                    'button_url' => self::url((string) ($block['button_url'] ?? '')),
-                ];
-            default:
-                return [];
-        }
-    }
-
-    /**
-     * @param array<string, string> $fields field name => "plain" (a short
-     *        value with no language, e.g. "0 %") or "text" (per locale)
-     * @return list<array<string, mixed>>
-     */
-    private static function cleanItems(array $block, array $fields): array
-    {
-        $items = is_array($block['items'] ?? null) ? array_slice($block['items'], 0, self::MAX_ITEMS) : [];
-        $clean = [];
-        foreach ($items as $item) {
-            if (!is_array($item)) {
-                continue;
-            }
-            $row = [];
-            foreach ($fields as $field => $kind) {
-                $row[$field] = $kind === 'plain' ? self::text((string) ($item[$field] ?? '')) : self::localized($item, $field);
-            }
-            $clean[] = $row;
-        }
-
-        return $clean;
-    }
-
-    /** @return array<string, mixed> empty fields for a freshly added block of this type */
-    private static function emptyFields(string $type): array
-    {
-        return self::cleanFields($type, []);
-    }
-
-    /** @return array<string, mixed> every field of this block, resolved to one language */
-    private static function resolveFields(string $type, array $block, string $locale, string $default): array
-    {
-        $pick = fn (array $texts) => (string) ($texts[$locale] ?? $texts[$default] ?? reset($texts) ?: '');
-
-        switch ($type) {
-            case 'hero':
-                return [
-                    'eyebrow' => $pick($block['eyebrow'] ?? []),
-                    'heading' => $pick($block['heading'] ?? []),
-                    'subheading' => $pick($block['subheading'] ?? []),
-                    'primary_label' => $pick($block['primary_label'] ?? []),
-                    'primary_url' => (string) ($block['primary_url'] ?? ''),
-                    'secondary_label' => $pick($block['secondary_label'] ?? []),
-                    'secondary_url' => (string) ($block['secondary_url'] ?? ''),
-                ];
-            case 'stats':
-                return [
-                    'heading' => $pick($block['heading'] ?? []),
-                    'items' => array_values(array_filter(array_map(fn (array $item) => [
-                        'value' => (string) ($item['value'] ?? ''),
-                        'label' => $pick($item['label'] ?? []),
-                    ], is_array($block['items'] ?? null) ? $block['items'] : []), fn (array $i) => $i['value'] !== '' || $i['label'] !== '')),
-                ];
-            case 'cards':
-                return [
-                    'heading' => $pick($block['heading'] ?? []),
-                    'intro' => $pick($block['intro'] ?? []),
-                    'items' => array_values(array_filter(array_map(fn (array $item) => [
-                        'tag' => $pick($item['tag'] ?? []),
-                        'heading' => $pick($item['heading'] ?? []),
-                        'text' => $pick($item['text'] ?? []),
-                    ], is_array($block['items'] ?? null) ? $block['items'] : []), fn (array $i) => $i['heading'] !== '')),
-                ];
-            case 'text':
-                return [
-                    'heading' => $pick($block['heading'] ?? []),
-                    'body' => $pick($block['body'] ?? []),
-                ];
-            case 'cta':
-                return [
-                    'heading' => $pick($block['heading'] ?? []),
-                    'text' => $pick($block['text'] ?? []),
-                    'button_label' => $pick($block['button_label'] ?? []),
-                    'button_url' => (string) ($block['button_url'] ?? ''),
-                ];
-            default:
-                return [];
-        }
-    }
-
-    /** Whether a resolved block still has enough to show - an empty one is left out rather than shown blank. */
-    private static function blockHasContent(string $type, array $resolved): bool
-    {
-        return match ($type) {
-            'hero' => $resolved['heading'] !== '',
-            'stats' => $resolved['items'] !== [],
-            'cards' => $resolved['items'] !== [],
-            'text' => $resolved['body'] !== '',
-            'cta' => $resolved['heading'] !== '' && $resolved['button_label'] !== '' && $resolved['button_url'] !== '',
-            default => false,
-        };
     }
 }

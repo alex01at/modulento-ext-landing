@@ -48,7 +48,16 @@ $pdo->exec('CREATE TABLE setting (name TEXT PRIMARY KEY, value TEXT NOT NULL)');
 $pdo->exec("CREATE TABLE extension (id TEXT PRIMARY KEY, version TEXT, enabled INTEGER, enabled_at TEXT)");
 $pdo->exec("INSERT INTO extension VALUES ('landing', '0', 1, '2026-01-01 00:00:00')");
 $pdo->exec("CREATE TABLE account (id INTEGER PRIMARY KEY, email TEXT UNIQUE, display_name TEXT, password_hash TEXT, status TEXT DEFAULT 'active',
-    locale TEXT DEFAULT 'de', created_at TEXT, last_login_at TEXT)");
+    locale TEXT DEFAULT 'de', identity_status TEXT, created_at TEXT, last_login_at TEXT)");
+$pdo->exec("CREATE TABLE provider (id INTEGER PRIMARY KEY, account_id INTEGER UNIQUE REFERENCES account (id) ON DELETE CASCADE, type TEXT, status TEXT,
+    name TEXT, slug TEXT UNIQUE, legal_name TEXT, street TEXT, postal_code TEXT, city TEXT, country TEXT, contact_email TEXT, phone TEXT,
+    vat_id TEXT, company_register TEXT, decided_at TEXT, decided_by INTEGER, created_at TEXT, updated_at TEXT, avg_response_minutes INTEGER, response_sample_count INTEGER NOT NULL DEFAULT 0,
+    rating_count INTEGER NOT NULL DEFAULT 0, rating_sum INTEGER NOT NULL DEFAULT 0)");
+$pdo->exec('CREATE TABLE provider_translation (provider_id INTEGER REFERENCES provider (id) ON DELETE CASCADE, locale TEXT, headline TEXT, description TEXT, PRIMARY KEY (provider_id, locale))');
+$pdo->exec("CREATE TABLE offer (id INTEGER PRIMARY KEY, provider_id INTEGER REFERENCES provider (id) ON DELETE CASCADE, type TEXT, category_id INTEGER,
+    status TEXT, price_from INTEGER, currency TEXT, published_at TEXT, created_at TEXT, updated_at TEXT, rating_count INTEGER NOT NULL DEFAULT 0, rating_sum INTEGER NOT NULL DEFAULT 0)");
+$pdo->exec('CREATE TABLE offer_translation (offer_id INTEGER REFERENCES offer (id) ON DELETE CASCADE, locale TEXT, title TEXT, slug TEXT, summary TEXT, description TEXT, PRIMARY KEY (offer_id, locale))');
+$pdo->exec('CREATE TABLE offer_image (id INTEGER PRIMARY KEY, offer_id INTEGER REFERENCES offer (id) ON DELETE CASCADE, name TEXT, extension TEXT, width INTEGER, height INTEGER, position INTEGER, created_at TEXT)');
 $pdo->exec('CREATE TABLE page (id INTEGER PRIMARY KEY, status TEXT, role TEXT, in_header INTEGER, in_footer INTEGER, position INTEGER)');
 $pdo->exec('CREATE TABLE page_translation (page_id INTEGER, locale TEXT, title TEXT, slug TEXT, meta_description TEXT, body TEXT)');
 $pdo->exec('CREATE TABLE account_preference (account_id INTEGER, name TEXT, value TEXT, PRIMARY KEY (account_id, name))');
@@ -70,14 +79,15 @@ $uploads = sys_get_temp_dir() . '/modulento-landing-test-' . bin2hex(random_byte
 mkdir($uploads . '/extensions', 0777, true);
 symlink($here, $uploads . '/extensions/landing');
 
-$app = new App([
+$config = [
     'app' => [
         'env' => 'dev', 'url' => 'https://landing.example', 'name' => 'Testseite', 'root' => $core,
         'extensions' => $uploads . '/extensions', 'uploads' => $uploads, 'secret_key' => $uploads . '/secret.key',
     ],
     'update' => ['token' => ''],
     'packages' => ['sources' => []],
-], $pdo, 'de');
+];
+$app = new App($config, $pdo, 'de');
 $app->translator->load($core . '/core/lang', 'core');
 $app->extensions->loadEnabled($app);
 check('extension: the core loads it as an addon', isset($app->extensions->loaded()['landing']) && $app->extensions->loaded()['landing']->type === 'addon');
@@ -162,6 +172,15 @@ http_response_code(200);
 (new LandingController($app))->index([]);
 $published = ob_get_clean();
 check('LandingController: a published page renders its blocks', http_response_code() === 200 && str_contains($published, '<p>Hallo</p>') && str_contains($published, 'Modulento'));
+check('LandingController: not wrapped as an editable block - this suite is never logged in, so edit mode never shows, ?edit=1 included',
+    !str_contains($published, 'inline-block') && !str_contains($published, 'inline-edit.js'));
+$_GET['edit'] = '1';
+ob_start();
+http_response_code(200);
+(new LandingController($app))->index([]);
+$notEditing = ob_get_clean();
+check('LandingController: ?edit=1 alone, without the permission, changes nothing', !str_contains($notEditing, 'inline-block') && http_response_code() === 200);
+unset($_GET['edit']);
 
 // --- AdminController: add, edit, reorder, delete, through the form itself --
 $page->save(false, [], []);
@@ -196,6 +215,81 @@ check('AdminController::reorder(): the dragged order is saved and answered as JS
 $_POST = ['action' => 'delete:' . $secondId];
 (new AdminController($app))->save([]);
 check('AdminController::save(): "delete" removes the block', array_column((new LandingPage($pdo))->get()['blocks'], 'id') === [$firstId]);
+
+$_POST = ['action' => 'toggle:' . $firstId];
+(new AdminController($app))->save([]);
+check('AdminController::save(): "toggle" (the live page\'s quick hide/show) flips enabled without touching any field',
+    (new LandingPage($pdo))->get()['blocks'][0]['enabled'] === false);
+$_POST = ['action' => 'toggle:' . $firstId];
+(new AdminController($app))->save([]);
+check('AdminController::save(): "toggle" again turns it back on', (new LandingPage($pdo))->get()['blocks'][0]['enabled'] === true);
+
+// --- editView(): every block (enabled or not), every item slot up to MAX_ITEMS ---
+$page->save(true, [], [
+    array_merge(LandingPage::newBlock('hero'), ['enabled' => false, 'heading' => ['de' => 'Versteckt']]),
+    array_merge(LandingPage::newBlock('stats'), ['items' => [['value' => '1', 'label' => ['de' => 'Eins']]]]),
+]);
+$editView = (new LandingPage($pdo))->editView('de', 'de');
+check('editView: a disabled block is included, unlike view()', count($editView['blocks']) === 2 && $editView['blocks'][0]['enabled'] === false && $editView['blocks'][0]['heading'] === 'Versteckt');
+check('editView: every item slot up to MAX_ITEMS is there, filled or not, each with its position', count($editView['blocks'][1]['items']) === LandingPage::MAX_ITEMS
+    && $editView['blocks'][1]['items'][0] === ['index' => 0, 'value' => '1', 'label' => 'Eins'] && $editView['blocks'][1]['items'][1]['value'] === '');
+
+// --- setField(): one field, saved on its own from a click on the live page -------
+$fieldPage = new LandingPage($pdo);
+$stored = $fieldPage->get()['blocks'];
+$heroId = $stored[0]['id'];
+$statsId = $stored[1]['id'];
+check('setField: a plain field is cleaned and stored under the current language', $fieldPage->setField($heroId, 'de', 'heading', '  Neue Überschrift  ') === 'Neue Überschrift'
+    && $fieldPage->get()['blocks'][0]['heading']['de'] === 'Neue Überschrift');
+check('setField: a repeated item field, addressed by position, is stored in that slot', $fieldPage->setField($statsId, 'de', 'items.2.label', 'Drei') === 'Drei'
+    && $fieldPage->get()['blocks'][1]['items'][2]['label']['de'] === 'Drei');
+check('setField: an unknown block id saves nothing', $fieldPage->setField('ffffffff', 'de', 'heading', 'x') === null);
+check('setField: a field this block\'s type does not have saves nothing', $fieldPage->setField($heroId, 'de', 'not_a_field', 'x') === null);
+check('setField: an item index beyond MAX_ITEMS saves nothing', $fieldPage->setField($statsId, 'de', 'items.99.label', 'x') === null);
+
+// AdminController::field()/order() read php://input directly (the live page's own script posts
+// a JSON body there) - exactly like the core's own AdminHomeController::field()/order(), which
+// this suite has no way to feed a body to either; LandingPage::setField(), just exercised above,
+// is every bit of logic either one has beyond decoding that body.
+
+// --- Edit mode end to end: an account with the permission gets the inline editor - Twig and all,
+// not just the permission check (a fresh App/Auth: account() caches its answer for good once asked,
+// and $app above was already asked while logged out). ---
+$pdo->exec("INSERT INTO account (id, email, display_name, password_hash, status, locale, created_at, last_login_at) VALUES (77, 'editor@landing.test', 'Editor', 'x', 'active', 'de', '2026-01-01 00:00:00', NULL)");
+$pdo->exec("INSERT INTO role (id, name) VALUES (1, 'Landing editor')");
+$pdo->exec("INSERT INTO role_permission (role_id, permission) VALUES (1, 'landing.manage')");
+$pdo->exec("INSERT INTO account_role (account_id, role_id) VALUES (77, 1)");
+$_SESSION = ['account_id' => 77, 'auth_stamp' => Modulento\Core\Support\Auth::stamp('x')];
+$editApp = new App($config, $pdo, 'de');
+$editApp->translator->load($core . '/core/lang', 'core');
+$editApp->extensions->loadEnabled($editApp);
+check('test setup: the account can manage the landing page', $editApp->auth->can('landing.manage'));
+
+$page->save(true, [], [array_merge(LandingPage::newBlock('hero'), ['heading' => ['de' => 'Testseite']])]);
+$_GET['edit'] = '1';
+ob_start();
+(new LandingController($editApp))->index([]);
+$editing = ob_get_clean();
+unset($_GET['edit']);
+check('LandingController: with the permission and ?edit=1, the page renders wrapped as editable (inline-edit.js, data-block-id)',
+    str_contains($editing, 'inline-block') && str_contains($editing, 'data-block-id') && str_contains($editing, 'inline-edit.js') && str_contains($editing, 'Testseite'));
+
+ob_start();
+(new AdminController($editApp))->index([]);
+$adminForm = ob_get_clean();
+check('AdminController::index(): the plain form renders too, fields and all', str_contains($adminForm, 'Testseite') && str_contains($adminForm, 'name="published"'));
+
+unset($_SESSION);
+
+// --- "Use as the start page": publishes automatically, writes/clears the core's own setting ---
+$page->save(false, [], []);
+$_POST = ['action' => 'save', 'meta' => ['title' => '', 'meta_description' => ''], 'is_home' => '1'];
+(new AdminController($app))->save([]);
+check('AdminController::save(): "is_home" publishes even though the box for it was not ticked, and sets core.home_redirect',
+    (new LandingPage($pdo))->get()['published'] === true && $app->settings->get('core.home_redirect') === '/landing');
+$_POST = ['action' => 'save', 'meta' => ['title' => '', 'meta_description' => ''], 'published' => '1'];
+(new AdminController($app))->save([]);
+check('AdminController::save(): unticking it clears core.home_redirect again', $app->settings->get('core.home_redirect') === '');
 
 // --- Clean up ----------------------------------------------------------------
 $remove = function (string $dir) use (&$remove): void {

@@ -6,60 +6,29 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ ext_asset('landing', 'landing.css') }}">
+    {% if can_edit %}
+        {# The core's own inline-edit scripts - loaded only here, not sitewide, since edit_mode()
+           elsewhere checks a different permission than this addon's own. They work on any
+           [data-field]/[data-block-id] markup, this addon's own included - no script of ours. #}
+        <script src="{{ admin_asset('editor.js') }}" defer></script>
+        <script src="{{ admin_asset('inline-edit.js') }}" defer></script>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
+{% include '@landing/inline/_bar.twig' %}
+
+{% if not published and can_edit %}
+    <p class="flash flash-error">{{ trans('landing.admin.draft_notice') }}</p>
+{% endif %}
+
 <div class="landing-page">
     {% for block in blocks %}
-        <section class="landing-block landing-block-{{ block.type }}">
-            {% if block.type == 'hero' %}
-                {% if block.eyebrow %}<p class="landing-eyebrow">{{ block.eyebrow }}</p>{% endif %}
-                <h1>{{ block.heading }}</h1>
-                {% if block.subheading %}<p class="landing-lead">{{ block.subheading }}</p>{% endif %}
-                {% if (block.primary_label and block.primary_url) or (block.secondary_label and block.secondary_url) %}
-                    <div class="landing-buttons">
-                        {% if block.primary_label and block.primary_url %}<a class="btn landing-btn-primary" href="{{ url(block.primary_url) }}">{{ block.primary_label }}</a>{% endif %}
-                        {% if block.secondary_label and block.secondary_url %}<a class="btn landing-btn-ghost" href="{{ url(block.secondary_url) }}">{{ block.secondary_label }}</a>{% endif %}
-                    </div>
-                {% endif %}
-
-            {% elseif block.type == 'stats' %}
-                {% if block.heading %}<h2>{{ block.heading }}</h2>{% endif %}
-                <div class="landing-stats">
-                    {% for item in block.items %}
-                        <div class="landing-stat">
-                            <div class="landing-stat-value">{{ item.value }}</div>
-                            <div class="landing-stat-label">{{ item.label }}</div>
-                        </div>
-                    {% endfor %}
-                </div>
-
-            {% elseif block.type == 'cards' %}
-                {% if block.heading %}<h2>{{ block.heading }}</h2>{% endif %}
-                {% if block.intro %}<p class="landing-intro">{{ block.intro }}</p>{% endif %}
-                <div class="landing-cards">
-                    {% for item in block.items %}
-                        <article class="landing-card">
-                            {% if item.tag %}<span class="landing-card-tag">{{ item.tag }}</span>{% endif %}
-                            <h3>{{ item.heading }}</h3>
-                            {% if item.text %}<p>{{ item.text }}</p>{% endif %}
-                        </article>
-                    {% endfor %}
-                </div>
-
-            {% elseif block.type == 'text' %}
-                {% if block.heading %}<h2>{{ block.heading }}</h2>{% endif %}
-                {# Cleaned to a fixed set of formatting elements when it was saved - see HtmlSanitizer. #}
-                <div class="landing-text">{{ block.body|raw }}</div>
-
-            {% elseif block.type == 'cta' %}
-                <div class="landing-cta">
-                    <h2>{{ block.heading }}</h2>
-                    {% if block.text %}<p>{{ block.text }}</p>{% endif %}
-                    <a class="btn landing-btn-primary" href="{{ url(block.button_url) }}">{{ block.button_label }}</a>
-                </div>
-            {% endif %}
-        </section>
+        {% if edit_mode %}
+            {% include '@landing/inline/_block.twig' %}
+        {% elseif block.enabled %}
+            {% include '@landing/_block_' ~ block.type ~ '.twig' %}
+        {% endif %}
     {% endfor %}
 </div>
 {% endblock %}

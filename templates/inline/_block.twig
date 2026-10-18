@@ -1,0 +1,43 @@
+{# One block while the page is edited in place: its tools, the block itself, and its settings
+   panel. Receives (from the parent context) block - from LandingPage::editView(), so every item
+   slot is here even if still empty - and raw_blocks, max_items. #}
+{% set id = block.id %}
+{% set raw = raw_blocks[id] ?? {} %}
+<div class="inline-block{{ block.enabled ? '' : ' is-hidden-block' }}" id="inline-{{ id }}" data-block-id="{{ id }}"
+     data-field-url="{{ url('/admin/landing/field') }}" data-order-url="{{ url('/admin/landing/order') }}" data-csrf="{{ csrf_token() }}">
+    <div class="inline-tools">
+        <div class="inline-head">
+            <p class="inline-name">
+                <span class="inline-grip" title="{{ trans('core.inline.move') }}" aria-hidden="true">⠿</span>
+                <strong>{{ trans('landing.block.' ~ block.type) }}</strong>
+                {% if not block.enabled %}<span class="badge badge-disabled">{{ trans('core.inline.hidden') }}</span>{% endif %}
+            </p>
+
+            <form method="post" action="{{ url('/admin/landing') }}" class="inline-steps">
+                {{ csrf_field() }}
+                <input type="hidden" name="return" value="{{ current_path() }}?edit=1">
+                <button type="submit" name="action" value="up:{{ id }}" class="btn-outline btn-sm" aria-label="{{ trans('core.home.up') }}">↑</button>
+                <button type="submit" name="action" value="down:{{ id }}" class="btn-outline btn-sm" aria-label="{{ trans('core.home.down') }}">↓</button>
+                <button type="submit" name="action" value="toggle:{{ id }}" class="btn-outline btn-sm">{{ block.enabled ? trans('core.inline.hide') : trans('core.inline.show') }}</button>
+                <button type="submit" name="action" value="delete:{{ id }}" class="danger btn-sm">{{ trans('core.home.remove') }}</button>
+            </form>
+        </div>
+
+        <details class="inline-edit">
+            <summary>{{ trans('core.inline.edit') }}</summary>
+            <form method="post" action="{{ url('/admin/landing') }}" class="inline-edit-form">
+                {{ csrf_field() }}
+                <input type="hidden" name="return" value="{{ current_path() }}?edit=1">
+                {% if block.enabled %}<input type="hidden" name="blocks[{{ id }}][enabled]" value="1">{% endif %}
+                {% include '@landing/admin/_fields.twig' with {id: id, block: raw, locale: locale(), max_items: max_items} only %}
+                <button type="submit" name="action" value="save">{{ trans('core.account.save') }}</button>
+            </form>
+        </details>
+    </div>
+
+    {% if block.enabled %}
+        {% include '@landing/_block_' ~ block.type ~ '.twig' %}
+    {% else %}
+        <p class="inline-off">{{ trans('landing.block.' ~ block.type) }} · {{ trans('core.inline.hidden') }}</p>
+    {% endif %}
+</div>
