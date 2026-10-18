@@ -1,0 +1,10 @@
+{
+    "id": "landing",
+    "name": "Landing page",
+    "version": "0.1.0",
+    "requires": "0.64.0",
+    "api": 1,
+    "type": "addon",
+    "description": "Lets an administrator build one marketing landing page from ready-made blocks - no HTML or CSS needed.",
+    "namespace": "Modulento\\Landing"
+}

@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'landing.permission.manage' => 'Manage the landing page',
+    'landing.admin.menu' => 'Landing page',
+    'landing.admin.title' => 'Landing page',
+    'landing.admin.intro' => 'A marketing page built from ready-made blocks - no HTML or CSS. Publish it to make it reachable at /landing; add it to the main menu or the footer under Content → Menu once it is ready.',
+    'landing.admin.published' => 'Published (reachable at /landing)',
+    'landing.admin.meta_title' => 'Page title',
+    'landing.admin.meta_description' => 'Meta description',
+    'landing.admin.add' => 'Add block',
+    'landing.admin.empty' => 'The page has no blocks yet. Add one.',
+    'landing.admin.saved' => 'The landing page has been saved.',
+    'landing.admin.changed' => 'The landing page has been changed.',
+    'landing.admin.item' => 'Entry {number}',
+
+    'landing.block.hero' => 'Hero',
+    'landing.block.stats' => 'Stat strip',
+    'landing.block.cards' => 'Card grid',
+    'landing.block.text' => 'Text',
+    'landing.block.cta' => 'Closing call to action',
+
+    'landing.field.eyebrow' => 'Eyebrow (short text above the heading)',
+    'landing.field.heading' => 'Heading',
+    'landing.field.subheading' => 'Subheading',
+    'landing.field.primary_label' => 'First button: label',
+    'landing.field.primary_url' => 'First button: target',
+    'landing.field.secondary_label' => 'Second button: label',
+    'landing.field.secondary_url' => 'Second button: target',
+    'landing.field.intro' => 'Intro text (optional)',
+    'landing.field.value' => 'Number/value',
+    'landing.field.label' => 'Label',
+    'landing.field.tag' => 'Category (short)',
+    'landing.field.text' => 'Text',
+    'landing.field.body' => 'Text',
+    'landing.field.button_label' => 'Button: label',
+    'landing.field.button_url' => 'Button: target',
+];

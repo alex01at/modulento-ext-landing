@@ -1,0 +1,7 @@
+{# One field of one repeatable item: name="blocks[{id}][items][{n}][{field}]". #}
+{% set plain = plain ?? false %}
+<div class="field">
+    <label for="field-{{ id }}-{{ n }}-{{ field }}">{{ trans('landing.field.' ~ field) }}</label>
+    <input id="field-{{ id }}-{{ n }}-{{ field }}" name="blocks[{{ id }}][items][{{ n }}][{{ field }}]" value="{{ value }}"
+        maxlength="{{ plain ? 40 : 200 }}">
+</div>

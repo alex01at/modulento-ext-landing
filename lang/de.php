@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'landing.permission.manage' => 'Landingpage verwalten',
+    'landing.admin.menu' => 'Landingpage',
+    'landing.admin.title' => 'Landingpage',
+    'landing.admin.intro' => 'Eine Marketing-Seite aus fertigen Bausteinen - ohne HTML oder CSS. Erst veröffentlichen, dann unter /landing aufrufbar; über Inhalt → Menü zum Hauptmenü oder zur Fußzeile hinzufügen.',
+    'landing.admin.published' => 'Veröffentlicht (unter /landing erreichbar)',
+    'landing.admin.meta_title' => 'Seitentitel',
+    'landing.admin.meta_description' => 'Meta-Beschreibung',
+    'landing.admin.add' => 'Baustein hinzufügen',
+    'landing.admin.empty' => 'Die Seite hat noch keine Bausteine. Füge einen hinzu.',
+    'landing.admin.saved' => 'Die Landingpage wurde gespeichert.',
+    'landing.admin.changed' => 'Die Landingpage wurde geändert.',
+    'landing.admin.item' => 'Eintrag {number}',
+
+    'landing.block.hero' => 'Hero',
+    'landing.block.stats' => 'Statistik-Leiste',
+    'landing.block.cards' => 'Karten-Raster',
+    'landing.block.text' => 'Text',
+    'landing.block.cta' => 'Abschluss (CTA)',
+
+    'landing.field.eyebrow' => 'Kicker (kurzer Text über der Überschrift)',
+    'landing.field.heading' => 'Überschrift',
+    'landing.field.subheading' => 'Unterzeile',
+    'landing.field.primary_label' => 'Erster Button: Text',
+    'landing.field.primary_url' => 'Erster Button: Ziel',
+    'landing.field.secondary_label' => 'Zweiter Button: Text',
+    'landing.field.secondary_url' => 'Zweiter Button: Ziel',
+    'landing.field.intro' => 'Einleitungstext (optional)',
+    'landing.field.value' => 'Zahl/Wert',
+    'landing.field.label' => 'Bezeichnung',
+    'landing.field.tag' => 'Kategorie (kurz)',
+    'landing.field.text' => 'Text',
+    'landing.field.body' => 'Text',
+    'landing.field.button_label' => 'Button: Text',
+    'landing.field.button_url' => 'Button: Ziel',
+];

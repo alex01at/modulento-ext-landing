@@ -1,0 +1,125 @@
+{% extends '@admin/layout.twig' %}
+
+{% block title %}{{ trans('landing.admin.title') }} – {{ site_name }}{% endblock %}
+
+{% block admin %}
+{% include '@admin/_page_header.twig' with {heading: trans('landing.admin.title')} only %}
+
+<section class="card-box">
+    <p>{{ trans('landing.admin.intro') }}</p>
+</section>
+
+{# Only the language the administration is in is edited here, like everywhere else - the core's
+   own menu editor uses the same pattern, down to the markup: a <ul data-menu-list> whose drag
+   handle, accordion and reorder endpoint the core's menu.js (loaded on every admin page) already
+   wires up, so this page needs no script of its own. #}
+<form method="post" action="{{ url('/admin/landing') }}" class="menu-editor">
+    {{ csrf_field() }}
+    <button type="submit" name="action" value="save" class="visually-hidden">{{ trans('core.account.save') }}</button>
+
+    <section class="card-box">
+        <label class="checkbox">
+            <input type="checkbox" name="published" value="1" {{ published ? 'checked' }}>
+            <span>{{ trans('landing.admin.published') }}</span>
+        </label>
+
+        <fieldset class="home-language" lang="{{ locale }}">
+            <legend>{{ locale_name(locale) }}</legend>
+            <div class="field">
+                <label for="meta_title">{{ trans('landing.admin.meta_title') }}</label>
+                <input id="meta_title" name="meta[title]" value="{{ meta.title ?? '' }}" maxlength="200">
+            </div>
+            <div class="field">
+                <label for="meta_description">{{ trans('landing.admin.meta_description') }}</label>
+                <input id="meta_description" name="meta[meta_description]" value="{{ meta.meta_description ?? '' }}" maxlength="200">
+            </div>
+        </fieldset>
+    </section>
+
+    <ul class="menu-list" data-menu-list data-reorder-url="{{ url('/admin/landing/reorder') }}" data-label-failed="{{ trans('landing.admin.changed') }}">
+        {% for block in blocks %}
+            {% set id = block.id %}
+            {% set label = block.heading[default_locale] ?? block.heading[locale] ?? '' %}
+            <li class="menu-item{{ block.enabled ? '' : ' is-off' }}" id="block-{{ id }}" data-menu-item data-id="{{ id }}">
+                <div class="menu-item-row">
+                    <span class="menu-item-handle" aria-hidden="true">⠿⠿</span>
+                    <label class="checkbox menu-item-enabled">
+                        <input type="checkbox" name="blocks[{{ id }}][enabled]" value="1" {{ block.enabled ? 'checked' }}>
+                        <span class="visually-hidden">{{ trans('core.home.enabled') }}</span>
+                    </label>
+                    <details class="menu-item-details">
+                        <summary>
+                            <span class="menu-item-label">{{ trans('landing.block.' ~ block.type) }}{% if label %} · {{ label }}{% endif %}</span>
+                        </summary>
+
+                        <div class="menu-item-body">
+                            {% if block.type == 'hero' %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'eyebrow', value: block.eyebrow[locale] ?? ''} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'subheading', value: block.subheading[locale] ?? ''} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'primary_label', value: block.primary_label[locale] ?? ''} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'primary_url', value: block.primary_url ?? '', plain: true} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'secondary_label', value: block.secondary_label[locale] ?? ''} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'secondary_url', value: block.secondary_url ?? '', plain: true} only %}
+                            {% elseif block.type == 'stats' %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
+                                {% for n in 0..max_items - 1 %}
+                                    <div class="field-grid">
+                                        {% include '@landing/admin/_item_field.twig' with {id: id, n: n, field: 'value', value: block.items[n].value ?? '', plain: true} only %}
+                                        {% include '@landing/admin/_item_field.twig' with {id: id, n: n, field: 'label', value: block.items[n].label[locale] ?? ''} only %}
+                                    </div>
+                                {% endfor %}
+                            {% elseif block.type == 'cards' %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'intro', value: block.intro[locale] ?? ''} only %}
+                                {% for n in 0..max_items - 1 %}
+                                    <fieldset class="home-language">
+                                        <legend>{{ trans('landing.admin.item', {number: n + 1}) }}</legend>
+                                        <div class="field-grid">
+                                            {% include '@landing/admin/_item_field.twig' with {id: id, n: n, field: 'tag', value: block.items[n].tag[locale] ?? ''} only %}
+                                            {% include '@landing/admin/_item_field.twig' with {id: id, n: n, field: 'heading', value: block.items[n].heading[locale] ?? ''} only %}
+                                        </div>
+                                        <div class="field">
+                                            <label for="field-{{ id }}-{{ n }}-text">{{ trans('landing.field.text') }}</label>
+                                            <textarea id="field-{{ id }}-{{ n }}-text" name="blocks[{{ id }}][items][{{ n }}][text]" rows="2" maxlength="200">{{ block.items[n].text[locale] ?? '' }}</textarea>
+                                        </div>
+                                    </fieldset>
+                                {% endfor %}
+                            {% elseif block.type == 'text' %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
+                                <div class="field">
+                                    <label for="field-{{ id }}-body">{{ trans('landing.field.body') }}</label>
+                                    <textarea id="field-{{ id }}-body" name="blocks[{{ id }}][body]" rows="10" lang="{{ locale }}" data-editor="{{ editor() }}">{{ block.body[locale] ?? '' }}</textarea>
+                                </div>
+                            {% elseif block.type == 'cta' %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'text', value: block.text[locale] ?? ''} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'button_label', value: block.button_label[locale] ?? ''} only %}
+                                {% include '@landing/admin/_field.twig' with {id: id, field: 'button_url', value: block.button_url ?? '', plain: true} only %}
+                            {% endif %}
+
+                            <div class="button-row">
+                                <button type="submit" name="action" value="up:{{ id }}" class="btn-outline btn-sm">{{ trans('core.home.up') }}</button>
+                                <button type="submit" name="action" value="down:{{ id }}" class="btn-outline btn-sm">{{ trans('core.home.down') }}</button>
+                                <button type="submit" name="action" value="delete:{{ id }}" class="danger btn-sm">{{ trans('core.home.remove') }}</button>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </li>
+        {% else %}
+            <li class="empty">{{ trans('landing.admin.empty') }}</li>
+        {% endfor %}
+    </ul>
+
+    <div class="button-row">
+        <select name="new_type" aria-label="{{ trans('landing.admin.add') }}">
+            {% for type in block_types %}
+                <option value="{{ type }}">{{ trans('landing.block.' ~ type) }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" name="action" value="add" class="btn-outline">{{ trans('landing.admin.add') }}</button>
+        <button type="submit" name="action" value="save">{{ trans('core.account.save') }}</button>
+    </div>
+</form>
+{% endblock %}

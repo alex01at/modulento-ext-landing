@@ -1,0 +1,165 @@
+/* Styles only the blocks this addon renders, under the active theme's own column
+   width - it never fights a theme's layout, only the look of its own content. Built
+   entirely on the design tokens every theme already loads (--accent, --ground,
+   --text, --font, --radius - see core/src/Support/Design.php), so it matches
+   whatever an operator has set there, on any theme. */
+
+.landing-page {
+    font-family: var(--font);
+    color: var(--text);
+}
+
+.landing-block {
+    padding-block: 2.5rem;
+}
+
+.landing-block + .landing-block {
+    border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+.landing-eyebrow {
+    margin: 0 0 .5rem;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.landing-block-hero h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    line-height: 1.15;
+}
+
+.landing-lead {
+    margin: 1rem 0 0;
+    max-width: 40rem;
+    font-size: 1.05rem;
+    color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.landing-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-top: 1.5rem;
+}
+
+.landing-page .btn.landing-btn-primary,
+.landing-page .btn.landing-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    padding: .65rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius, 6px);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.landing-btn-primary {
+    background: var(--accent);
+    color: #fff;
+}
+
+.landing-btn-primary:hover {
+    opacity: .9;
+}
+
+.landing-btn-ghost {
+    border-color: color-mix(in srgb, var(--text) 25%, transparent);
+    color: var(--text);
+}
+
+.landing-btn-ghost:hover {
+    background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.landing-block h2 {
+    margin: 0 0 1.5rem;
+    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+}
+
+.landing-intro {
+    margin: -1rem 0 1.5rem;
+    max-width: 40rem;
+    color: color-mix(in srgb, var(--text) 70%, transparent);
+}
+
+.landing-stats {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+}
+
+.landing-stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.landing-stat-label {
+    margin-top: .25rem;
+    font-size: .875rem;
+    color: color-mix(in srgb, var(--text) 70%, transparent);
+}
+
+.landing-cards {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.landing-card {
+    padding: 1.25rem 1.4rem;
+    border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+    border-radius: var(--radius, 6px);
+    background: color-mix(in srgb, var(--ground) 97%, var(--text) 3%);
+}
+
+.landing-card-tag {
+    display: inline-block;
+    margin-bottom: .5rem;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.landing-card h3 {
+    margin: 0 0 .5rem;
+    font-size: 1.05rem;
+}
+
+.landing-card p {
+    margin: 0;
+    color: color-mix(in srgb, var(--text) 75%, transparent);
+    font-size: .9rem;
+}
+
+.landing-text {
+    max-width: 42rem;
+    line-height: 1.65;
+}
+
+.landing-block-cta {
+    padding: 3rem 1.5rem;
+    border-radius: var(--radius, 6px);
+    background: color-mix(in srgb, var(--accent) 10%, var(--ground));
+    text-align: center;
+}
+
+.landing-cta h2 {
+    margin: 0;
+}
+
+.landing-cta p {
+    margin: .75rem auto 0;
+    max-width: 32rem;
+    color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.landing-cta .btn {
+    margin-top: 1.5rem;
+}

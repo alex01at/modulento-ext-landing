@@ -1,0 +1,8 @@
+{# A single block-level field: name="blocks[{id}][{field}]". "plain" means it is not per
+   language (e.g. a URL) - a longer limit and the same placeholder CustomMenu's path field uses. #}
+{% set plain = plain ?? false %}
+<div class="field">
+    <label for="field-{{ id }}-{{ field }}">{{ trans('landing.field.' ~ field) }}</label>
+    <input id="field-{{ id }}-{{ field }}" name="blocks[{{ id }}][{{ field }}]" value="{{ value }}"
+        maxlength="{{ plain ? 500 : 200 }}" {% if plain %}placeholder="/seite oder https://…"{% endif %}>
+</div>
