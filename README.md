@@ -55,8 +55,12 @@ closing call to action, in German and English - written to sell Modulento
 itself as a product. Import it under **Administration → Export/Import**
 (it names only the `landing.page` section, so nothing else about the
 installation is touched) to get it as a starting point, then adjust the
-text and the two GitHub links to taste. It imports unpublished on purpose,
-so it can be reviewed before it goes live.
+text and the two GitHub links to taste. It also shows off a block's own
+look: the hero and the closing call to action are set to a serif font,
+the call to action has a dark background of its own, and the text
+section colours two phrases in its body - the same per-word colour a
+click on the text itself can set once editing it on the page. It imports
+unpublished on purpose, so it can be reviewed before it goes live.
 
 ## Requirements
 

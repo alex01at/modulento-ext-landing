@@ -1,6 +1,6 @@
 {
     "modulento_export": true,
-    "core_version": "0.66.0",
+    "core_version": "0.67.0",
     "exported_at": "2026-10-19 00:00",
     "sections": {
         "landing.page": {
@@ -35,7 +35,8 @@
                     "primary_label": { "de": "Release herunterladen", "en": "Download a release" },
                     "primary_url": "https://github.com/alex01at/modulento/releases",
                     "secondary_label": { "de": "Code ansehen", "en": "View the code" },
-                    "secondary_url": "https://github.com/alex01at/modulento"
+                    "secondary_url": "https://github.com/alex01at/modulento",
+                    "settings": { "font": "serif" }
                 },
                 {
                     "id": "b2c3d4e5",
@@ -109,8 +110,8 @@
                     "enabled": true,
                     "heading": { "de": "Ohne Umwege gebaut", "en": "Built without detours" },
                     "body": {
-                        "de": "<p>Plain PHP, kein Framework, kein Build-Schritt - was auf jedem gewöhnlichen Webhosting läuft.</p><ul><li>PHP ≥ 8.3, Twig, MariaDB/MySQL, vanilla JS/CSS</li><li>Zahlungsabwicklung: Überweisung, PayPal, Stripe</li><li>0&nbsp;% Provision - Käufer zahlt direkt</li><li>Lizenz: GPL-3.0-or-later</li><li>Kein Shell-Zugriff für den Betrieb nötig</li></ul>",
-                        "en": "<p>Plain PHP, no framework, no build step - what runs on any ordinary web host.</p><ul><li>PHP ≥ 8.3, Twig, MariaDB/MySQL, vanilla JS/CSS</li><li>Payment: bank transfer, PayPal, Stripe</li><li>0&nbsp;% commission - the buyer pays directly</li><li>License: GPL-3.0-or-later</li><li>No shell access needed to run it</li></ul>"
+                        "de": "<p>Plain PHP, kein Framework, kein Build-Schritt - was auf jedem gewöhnlichen Webhosting läuft.</p><ul><li>PHP ≥ 8.3, Twig, MariaDB/MySQL, vanilla JS/CSS</li><li>Zahlungsabwicklung: Überweisung, PayPal, Stripe</li><li><span style=\"color: #2f6b4f\">0&nbsp;% Provision</span> - Käufer zahlt direkt</li><li>Lizenz: <span style=\"color: #2f6b4f\">GPL-3.0-or-later</span></li><li>Kein Shell-Zugriff für den Betrieb nötig</li></ul>",
+                        "en": "<p>Plain PHP, no framework, no build step - what runs on any ordinary web host.</p><ul><li>PHP ≥ 8.3, Twig, MariaDB/MySQL, vanilla JS/CSS</li><li>Payment: bank transfer, PayPal, Stripe</li><li><span style=\"color: #2f6b4f\">0&nbsp;% commission</span> - the buyer pays directly</li><li>License: <span style=\"color: #2f6b4f\">GPL-3.0-or-later</span></li><li>No shell access needed to run it</li></ul>"
                     }
                 },
                 {
@@ -123,7 +124,8 @@
                         "en": "Download a release and install it on ordinary web hosting - no shell access needed."
                     },
                     "button_label": { "de": "Release herunterladen", "en": "Download a release" },
-                    "button_url": "https://github.com/alex01at/modulento/releases"
+                    "button_url": "https://github.com/alex01at/modulento/releases",
+                    "settings": { "background_type": "color", "background_color": "#15201a", "text_color": "#ffffff", "font": "serif" }
                 }
             ]
         }

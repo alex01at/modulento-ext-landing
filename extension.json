@@ -1,8 +1,8 @@
 {
     "id": "landing",
     "name": "Landing page",
-    "version": "0.4.0",
-    "requires": "0.66.0",
+    "version": "0.4.1",
+    "requires": "0.67.0",
     "api": 1,
     "type": "addon",
     "description": "Lets an administrator build one marketing landing page from ready-made blocks - no HTML or CSS needed.",
