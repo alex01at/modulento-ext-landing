@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modulento\Landing;
 
 use Modulento\Core\Content\CustomMenu;
+use Modulento\Core\Content\HomeLayout;
 use Modulento\Core\Support\Clock;
+use Modulento\Core\Support\Design;
 use Modulento\Core\Support\HtmlSanitizer;
 use PDO;
 
@@ -113,7 +115,10 @@ final class LandingPage
             if (!isset(self::SCHEMA[$type]) || !preg_match('/^[a-f0-9]{8}$/', $id)) {
                 continue;
             }
-            $cleanBlocks[] = ['id' => $id, 'type' => $type, 'enabled' => (bool) ($block['enabled'] ?? false)] + self::cleanFields($type, $block);
+            $cleanBlocks[] = [
+                'id' => $id, 'type' => $type, 'enabled' => (bool) ($block['enabled'] ?? false),
+                'settings' => self::cleanSettings($block['settings'] ?? []),
+            ] + self::cleanFields($type, $block);
         }
 
         $content = (string) json_encode(['meta' => $cleanMeta, 'blocks' => $cleanBlocks], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
@@ -134,7 +139,7 @@ final class LandingPage
     {
         $type = isset(self::SCHEMA[$type]) ? $type : self::BLOCK_TYPES[0];
 
-        return ['id' => bin2hex(random_bytes(4)), 'type' => $type, 'enabled' => true] + self::cleanFields($type, []);
+        return ['id' => bin2hex(random_bytes(4)), 'type' => $type, 'enabled' => true, 'settings' => []] + self::cleanFields($type, []);
     }
 
     /**
@@ -391,6 +396,114 @@ final class LandingPage
         }
 
         return $result;
+    }
+
+    /**
+     * A block's own look, the same idea the core's own HomeLayout already
+     * offers per block (background colour/gradient/picture), plus a font
+     * and a text colour of its own - no language of its own, unlike every
+     * field above, so the plain form always sends the whole thing and it
+     * is never merged with what was there before (see AdminController).
+     *
+     * @return array<string, string>
+     */
+    private static function cleanSettings($raw): array
+    {
+        $raw = is_array($raw) ? $raw : [];
+        $settings = [];
+
+        $type = (string) ($raw['background_type'] ?? '');
+        if (in_array($type, ['color', 'gradient', 'image'], true)) {
+            $settings['background_type'] = $type;
+            if ($type !== 'image') {
+                $color = strtolower(trim((string) ($raw['background_color'] ?? '')));
+                if (HomeLayout::validColour($color)) {
+                    $settings['background_color'] = $color;
+                }
+            }
+            if ($type === 'gradient') {
+                $color2 = strtolower(trim((string) ($raw['background_color2'] ?? '')));
+                if (HomeLayout::validColour($color2)) {
+                    $settings['background_color2'] = $color2;
+                }
+            }
+            if ($type === 'image') {
+                $settings['background_media'] = HomeLayout::cleanMedia((string) ($raw['background_media'] ?? ''));
+            }
+        }
+
+        $font = (string) ($raw['font'] ?? '');
+        if (isset(Design::FONTS[$font])) {
+            $settings['font'] = $font;
+        }
+
+        $textColor = strtolower(trim((string) ($raw['text_color'] ?? '')));
+        if (HomeLayout::validColour($textColor)) {
+            $settings['text_color'] = $textColor;
+        }
+
+        return $settings;
+    }
+
+    /**
+     * CSS rules for every block that has a background, font or text colour
+     * of its own, one rule per block targeted by `[data-landing-block="{id}"]`
+     * - never an inline `style=""` (the site's Content-Security-Policy
+     * allows no `style-src 'unsafe-inline'`, only same-origin stylesheets).
+     * Served as its own small stylesheet (LandingController::css()), since
+     * this addon's own content is no business of the core's design
+     * stylesheet (DesignController).
+     */
+    public function blockStylesCss(): string
+    {
+        $css = '';
+        foreach ($this->get()['blocks'] as $block) {
+            $style = self::blockStyle(is_array($block['settings'] ?? null) ? $block['settings'] : []);
+            if ($style !== '') {
+                $css .= '[data-landing-block="' . $block['id'] . '"] {' . "\n    " . $style . "\n}\n";
+            }
+        }
+
+        return $css;
+    }
+
+    /** A block's background, font and text colour, as ready "property: value;" lines - empty for none of them. */
+    private static function blockStyle(array $settings): string
+    {
+        $rules = [];
+
+        $background = self::backgroundStyle($settings);
+        if ($background !== '') {
+            $rules[] = $background;
+        }
+
+        $font = (string) ($settings['font'] ?? '');
+        if (isset(Design::FONTS[$font])) {
+            $rules[] = 'font-family: ' . Design::FONTS[$font] . ';';
+        }
+
+        $textColor = (string) ($settings['text_color'] ?? '');
+        if (HomeLayout::validColour($textColor)) {
+            $rules[] = 'color: ' . $textColor . ';';
+        }
+
+        return implode(' ', $rules);
+    }
+
+    /** The background a block's own settings ask for - the same rule HomeLayout's own blocks use. */
+    private static function backgroundStyle(array $settings): string
+    {
+        $type = $settings['background_type'] ?? null;
+        $colour = fn (string $key) => is_string($settings[$key] ?? null) && HomeLayout::validColour($settings[$key]) ? $settings[$key] : null;
+
+        return match (true) {
+            $type === 'color' && $colour('background_color') !== null => 'background: ' . $colour('background_color') . ';',
+            $type === 'gradient' && $colour('background_color') !== null && $colour('background_color2') !== null
+                => 'background: linear-gradient(135deg, ' . $colour('background_color') . ', ' . $colour('background_color2') . ');',
+            $type === 'image' && HomeLayout::cleanMedia((string) ($settings['background_media'] ?? '')) !== ''
+                => 'background-image: url(' . HomeLayout::cleanMedia((string) $settings['background_media']) . '); background-size: cover; background-position: center;',
+            default => '',
+        };
     }
 
     /** @return array<string, string> */

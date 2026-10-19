@@ -43,6 +43,22 @@ final class LandingController extends \Modulento\Core\Controller\Controller
             'raw_blocks' => $rawById,
             'block_types' => LandingPage::BLOCK_TYPES,
             'max_items' => LandingPage::MAX_ITEMS,
+            // So the browser fetches the stylesheet below again exactly when a block's own
+            // background, font or text colour actually changed - never otherwise.
+            'blocks_css_version' => substr(sha1(json_encode($data['blocks'], JSON_THROW_ON_ERROR)), 0, 8),
         ]);
+    }
+
+    /**
+     * The background, font and text colour a block's own settings ask for
+     * - never an inline `style=""` (blocked by the site's own Content-
+     * Security-Policy) - as its own small stylesheet, public, cacheable,
+     * independent of the core's design stylesheet (DesignController).
+     */
+    public function css(array $params): void
+    {
+        header('Content-Type: text/css; charset=utf-8');
+        header('Cache-Control: public, max-age=300');
+        echo (new LandingPage($this->app->db))->blockStylesCss();
     }
 }

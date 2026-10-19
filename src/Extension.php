@@ -28,6 +28,7 @@ final class Extension implements ExtensionContract
 
         $registrar->routes(function (Router $router): void {
             $router->get('/landing', [LandingController::class, 'index'], Router::PUBLIC);
+            $router->get('/landing/blocks.css', [LandingController::class, 'css'], Router::PUBLIC);
 
             $router->get('/admin/landing', [AdminController::class, 'index'], self::PERMISSION);
             $router->post('/admin/landing', [AdminController::class, 'save'], self::PERMISSION);

@@ -45,3 +45,55 @@
     {% include '@landing/admin/_field.twig' with {id: id, field: 'button_label', value: block.button_label[locale] ?? ''} only %}
     {% include '@landing/admin/_field.twig' with {id: id, field: 'button_url', value: block.button_url ?? '', plain: true} only %}
 {% endif %}
+
+{# Not tied to any language, unlike every field above - a block's own look, the same idea the
+   core's own home-page blocks already offer (background), plus a font and a text colour of its
+   own; "data-background-toggle"/"data-background-field" is the core's own background-field.js,
+   already loaded on every administration page. #}
+<fieldset>
+    <legend>{{ trans('core.home.background') }}</legend>
+    <div class="field">
+        <label for="bg-type-{{ id }}">{{ trans('core.home.background_type') }}</label>
+        <select id="bg-type-{{ id }}" name="blocks[{{ id }}][settings][background_type]" data-background-toggle>
+            <option value="" {{ (block.settings.background_type ?? '') == '' ? 'selected' }}>{{ trans('core.home.background_option_none') }}</option>
+            <option value="color" {{ (block.settings.background_type ?? '') == 'color' ? 'selected' }}>{{ trans('core.home.background_option_color') }}</option>
+            <option value="gradient" {{ (block.settings.background_type ?? '') == 'gradient' ? 'selected' }}>{{ trans('core.home.background_option_gradient') }}</option>
+            <option value="image" {{ (block.settings.background_type ?? '') == 'image' ? 'selected' }}>{{ trans('core.home.background_option_image') }}</option>
+        </select>
+    </div>
+    <div class="field" data-background-field="color gradient">
+        <label for="bg-color-{{ id }}">{{ trans('core.home.background_color') }}</label>
+        <input id="bg-color-{{ id }}" type="color" name="blocks[{{ id }}][settings][background_color]" value="{{ block.settings.background_color ?? '#ffffff' }}">
+    </div>
+    <div class="field" data-background-field="gradient">
+        <label for="bg-color2-{{ id }}">{{ trans('core.home.background_color2') }}</label>
+        <input id="bg-color2-{{ id }}" type="color" name="blocks[{{ id }}][settings][background_color2]" value="{{ block.settings.background_color2 ?? '#ffffff' }}">
+    </div>
+    <div class="field" data-background-field="image">
+        <label for="bg-media-{{ id }}">{{ trans('core.home.picture') }}</label>
+        <select id="bg-media-{{ id }}" name="blocks[{{ id }}][settings][background_media]">
+            <option value="">{{ trans('core.home.picture_none') }}</option>
+            {% for picture in library_pictures() %}
+                <option value="{{ picture.url }}" {{ picture.url == (block.settings.background_media ?? '') ? 'selected' }}>{{ picture.title ?: picture.url }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>{{ trans('landing.field.typography') }}</legend>
+    <div class="field-grid">
+        <div class="field">
+            <label for="font-{{ id }}">{{ trans('core.design.font') }}</label>
+            <select id="font-{{ id }}" name="blocks[{{ id }}][settings][font]">
+                <option value="">{{ trans('landing.field.font_default') }}</option>
+                {% for key in ['system', 'serif', 'humanist', 'mono'] %}
+                    <option value="{{ key }}" {{ (block.settings.font ?? '') == key ? 'selected' }}>{{ trans('core.design.font.' ~ key) }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field">
+            <label for="text-color-{{ id }}">{{ trans('core.design.text') }}</label>
+            <input id="text-color-{{ id }}" type="color" name="blocks[{{ id }}][settings][text_color]" value="{{ block.settings.text_color ?? '#1c2430' }}">
+        </div>
+    </div>
+</fieldset>

@@ -39,4 +39,6 @@ return [
     'landing.field.body' => 'Text',
     'landing.field.button_label' => 'Button: Text',
     'landing.field.button_url' => 'Button: Ziel',
+    'landing.field.typography' => 'Schrift & Textfarbe',
+    'landing.field.font_default' => 'Wie die Website',
 ];

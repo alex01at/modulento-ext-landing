@@ -6,6 +6,7 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ ext_asset('landing', 'landing.css') }}">
+    <link rel="stylesheet" href="{{ url('/landing/blocks.css') }}?v={{ blocks_css_version }}">
     {% if can_edit %}
         {# The core's own inline-edit scripts - loaded only here, not sitewide, since edit_mode()
            elsewhere checks a different permission than this addon's own. They work on any

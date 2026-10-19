@@ -1,6 +1,6 @@
 {# Receives block: heading, text, button_label/button_url. Heading and text are edited on the
    spot; the button only through the "Bearbeiten" panel - see inline/_block.twig. #}
-<section class="landing-block landing-block-cta">
+<section class="landing-block landing-block-cta" data-landing-block="{{ block.id }}">
     <div class="landing-cta">
         <h2 data-field="heading">{{ block.heading }}</h2>
         {% if block.text or edit_mode %}<p data-field="text">{{ block.text }}</p>{% endif %}

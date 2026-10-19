@@ -33,6 +33,12 @@ addon and with the installation's one app.
   text colour, font, corner radius - Administration → Design), so the page
   matches the installation's own look on any theme, without the addon
   shipping a theme of its own.
+- **One block at a time can break from that look**: its own background
+  (a colour, a gradient, or a picture from the media library), its own
+  font and its own text colour - the "Bearbeiten" panel's own fieldset,
+  the same idea (and the same background-type dropdown) the core's own
+  home-page blocks already offer. Left on "like the website", a block
+  simply follows Design as every other one does.
 - Only the language the administration is currently in is edited at a time,
   like the core's own menu and home-page editors; switch language in the
   administration header to fill in another one.

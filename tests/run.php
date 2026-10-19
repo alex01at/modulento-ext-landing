@@ -65,6 +65,7 @@ $pdo->exec('CREATE TABLE role (id INTEGER PRIMARY KEY, name TEXT)');
 $pdo->exec('CREATE TABLE role_permission (role_id INTEGER REFERENCES role (id) ON DELETE CASCADE, permission TEXT)');
 $pdo->exec('CREATE TABLE account_role (account_id INTEGER REFERENCES account (id) ON DELETE CASCADE, role_id INTEGER REFERENCES role (id) ON DELETE CASCADE)');
 $pdo->exec('CREATE TABLE x_landing_page (id INTEGER PRIMARY KEY, published INTEGER NOT NULL DEFAULT 0, content TEXT NOT NULL, updated_at TEXT NOT NULL)');
+$pdo->exec('CREATE TABLE media (id INTEGER PRIMARY KEY, file TEXT UNIQUE NOT NULL, title TEXT NOT NULL DEFAULT \'\', width INTEGER NOT NULL, height INTEGER NOT NULL, bytes INTEGER NOT NULL, created_at TEXT NOT NULL)');
 
 // The migration and the schema above must name the same columns.
 $migration = (string) file_get_contents($here . '/migrations/001_landing.sql');
@@ -265,6 +266,29 @@ check('setField: a repeated item field, addressed by position, is stored in that
 check('setField: an unknown block id saves nothing', $fieldPage->setField('ffffffff', 'de', 'heading', 'x') === null);
 check('setField: a field this block\'s type does not have saves nothing', $fieldPage->setField($heroId, 'de', 'not_a_field', 'x') === null);
 check('setField: an item index beyond MAX_ITEMS saves nothing', $fieldPage->setField($statsId, 'de', 'items.99.label', 'x') === null);
+
+// --- A block's own look: background, font and text colour - not tied to any language ---
+$looksPage = new LandingPage($pdo);
+$withLook = array_merge(LandingPage::newBlock('cta'), [
+    'settings' => ['background_type' => 'color', 'background_color' => '#00AA55', 'font' => 'serif', 'text_color' => '#111111'],
+    'heading' => ['de' => 'x'], 'button_label' => ['de' => 'x'], 'button_url' => '/x',
+]);
+$looksPage->save(true, [], [$withLook]);
+$storedLook = $looksPage->get()['blocks'][0];
+check('save: a background colour, font and text colour are cleaned and kept (colour lower-cased)',
+    $storedLook['settings'] === ['background_type' => 'color', 'background_color' => '#00aa55', 'font' => 'serif', 'text_color' => '#111111']);
+check('blockStylesCss: one rule per block that has a look of its own, targeted by data-landing-block',
+    $looksPage->blockStylesCss() === '[data-landing-block="' . $storedLook['id'] . '"] {' . "\n    background: #00aa55; font-family: Georgia, \"Times New Roman\", serif; color: #111111;\n}\n");
+
+$noLook = array_merge(LandingPage::newBlock('text'), ['settings' => ['background_type' => 'not-a-type', 'font' => 'not-a-font', 'text_color' => 'rot'], 'heading' => [], 'body' => ['de' => '<p>x</p>']]);
+$looksPage->save(true, [], [$withLook, $noLook]);
+check('save: an invalid background type, font or colour is simply left out, nothing else about the block is lost',
+    $looksPage->get()['blocks'][1]['settings'] === [] && $looksPage->get()['blocks'][1]['body']['de'] === '<p>x</p>');
+check('blockStylesCss: a block with no valid look of its own gets no rule at all', !str_contains($looksPage->blockStylesCss(), $looksPage->get()['blocks'][1]['id']));
+
+$gradientBlock = array_merge(LandingPage::newBlock('cta'), ['settings' => ['background_type' => 'gradient', 'background_color' => '#ff0000', 'background_color2' => '#0000ff'], 'heading' => ['de' => 'x'], 'button_label' => ['de' => 'x'], 'button_url' => '/x']);
+$looksPage->save(true, [], [$gradientBlock]);
+check('blockStylesCss: a gradient needs both colours, and renders as a CSS gradient', str_contains($looksPage->blockStylesCss(), 'linear-gradient(135deg, #ff0000, #0000ff)'));
 
 // AdminController::field()/order() read php://input directly (the live page's own script posts
 // a JSON body there) - exactly like the core's own AdminHomeController::field()/order(), which

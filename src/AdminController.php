@@ -181,10 +181,13 @@ final class AdminController extends \Modulento\Core\Controller\Controller
                 continue;
             }
 
+            // Not tied to any language, unlike every field applyLocaleEdit() handles - the form
+            // always sends the whole thing, so it is replaced outright, never merged.
             $blocks[] = [
                 'id' => $id,
                 'type' => $block['type'],
                 'enabled' => isset($posted[$id]['enabled']),
+                'settings' => is_array($posted[$id]['settings'] ?? null) ? $posted[$id]['settings'] : [],
             ] + LandingPage::applyLocaleEdit($block, $locale, $posted[$id]);
         }
 
