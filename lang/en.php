@@ -26,6 +26,7 @@ return [
 
     'landing.field.eyebrow' => 'Eyebrow (short text above the heading)',
     'landing.field.heading' => 'Heading',
+    'landing.field.heading_accent' => 'Heading: emphasised addition (optional, highlighted)',
     'landing.field.subheading' => 'Subheading',
     'landing.field.primary_label' => 'First button: label',
     'landing.field.primary_url' => 'First button: target',

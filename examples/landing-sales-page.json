@@ -25,8 +25,12 @@
                         "en": "Self-Hosted · Open Source · GPL-3.0"
                     },
                     "heading": {
-                        "de": "Eine eigene Plattform. Dein Server, dein Code, deine Regeln.",
-                        "en": "Your own platform. Your server, your code, your rules."
+                        "de": "Eine eigene Plattform.",
+                        "en": "A platform of your own."
+                    },
+                    "heading_accent": {
+                        "de": "Dein Server, dein Code, deine Regeln.",
+                        "en": "Your server, your code, your rules."
                     },
                     "subheading": {
                         "de": "Modulento ist der schlanke PHP-Kern für Vermittlungsplattformen - Angebote, Bestellungen, Zahlungen, Bewertungen. Keine Monatsmiete, keine Provision auf jede Transaktion, kein Shell-Zugriff für den laufenden Betrieb nötig.",

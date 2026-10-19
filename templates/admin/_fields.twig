@@ -4,6 +4,7 @@
 {% if block.type == 'hero' %}
     {% include '@landing/admin/_field.twig' with {id: id, field: 'eyebrow', value: block.eyebrow[locale] ?? ''} only %}
     {% include '@landing/admin/_field.twig' with {id: id, field: 'heading', value: block.heading[locale] ?? ''} only %}
+    {% include '@landing/admin/_field.twig' with {id: id, field: 'heading_accent', value: block.heading_accent[locale] ?? ''} only %}
     {% include '@landing/admin/_field.twig' with {id: id, field: 'subheading', value: block.subheading[locale] ?? ''} only %}
     {% include '@landing/admin/_field.twig' with {id: id, field: 'primary_label', value: block.primary_label[locale] ?? ''} only %}
     {% include '@landing/admin/_field.twig' with {id: id, field: 'primary_url', value: block.primary_url ?? '', plain: true} only %}

@@ -32,6 +32,11 @@
     line-height: 1.15;
 }
 
+.landing-hero-accent {
+    font-style: italic;
+    color: var(--accent);
+}
+
 .landing-lead {
     margin: 1rem 0 0;
     max-width: 40rem;

@@ -36,7 +36,7 @@ final class LandingPage
 {
     private const SCHEMA = [
         'hero' => [
-            'eyebrow' => 'text', 'heading' => 'text', 'subheading' => 'text',
+            'eyebrow' => 'text', 'heading' => 'text', 'heading_accent' => 'text', 'subheading' => 'text',
             'primary_label' => 'text', 'primary_url' => 'url',
             'secondary_label' => 'text', 'secondary_url' => 'url',
         ],

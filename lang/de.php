@@ -26,6 +26,7 @@ return [
 
     'landing.field.eyebrow' => 'Kicker (kurzer Text über der Überschrift)',
     'landing.field.heading' => 'Überschrift',
+    'landing.field.heading_accent' => 'Überschrift: Betonter Zusatz (optional, wird hervorgehoben)',
     'landing.field.subheading' => 'Unterzeile',
     'landing.field.primary_label' => 'Erster Button: Text',
     'landing.field.primary_url' => 'Erster Button: Ziel',
