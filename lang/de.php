@@ -9,6 +9,7 @@ return [
     'landing.admin.published' => 'Veröffentlicht (unter /landing erreichbar)',
     'landing.admin.is_home' => 'Als Startseite verwenden (/ leitet auf diese Seite um; macht sie automatisch veröffentlicht)',
     'landing.admin.draft_notice' => 'Entwurf - noch nicht veröffentlicht. Nur du siehst diese Seite gerade.',
+    'landing.export.page' => 'Landingpage',
     'landing.admin.meta_title' => 'Seitentitel',
     'landing.admin.meta_description' => 'Meta-Beschreibung',
     'landing.admin.add' => 'Baustein hinzufügen',

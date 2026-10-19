@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modulento\Landing;
 
+use Modulento\Core\App;
 use Modulento\Core\Extension\Extension as ExtensionContract;
 use Modulento\Core\Extension\Registrar;
 use Modulento\Core\Support\Router;
@@ -36,5 +37,21 @@ final class Extension implements ExtensionContract
         });
 
         $registrar->adminMenu('landing.admin.menu', '/admin/landing', self::PERMISSION, 'content');
+
+        // Administration -> Export/Import (core): the whole page - published or not, every
+        // block, every language - as one of its sections, through the exact same save() a
+        // click on the page itself or the plain form already use.
+        $registrar->exportable('landing.page', 'landing.export.page',
+            static fn (App $app): array => (new LandingPage($app->db))->get(),
+            static function ($data, App $app): void {
+                if (!is_array($data)) {
+                    return;
+                }
+                (new LandingPage($app->db))->save(
+                    (bool) ($data['published'] ?? false),
+                    is_array($data['meta'] ?? null) ? $data['meta'] : [],
+                    is_array($data['blocks'] ?? null) ? $data['blocks'] : []
+                );
+            });
     }
 }

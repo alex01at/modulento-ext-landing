@@ -91,9 +91,28 @@ $app = new App($config, $pdo, 'de');
 $app->translator->load($core . '/core/lang', 'core');
 $app->extensions->loadEnabled($app);
 check('extension: the core loads it as an addon', isset($app->extensions->loaded()['landing']) && $app->extensions->loaded()['landing']->type === 'addon');
-check('extension: permission and admin menu entry are announced, nothing else', ($app->permissions()['landing.manage'] ?? null) === 'landing.permission.manage'
+check('extension: permission and admin menu entry are announced, nothing navigates to it on its own', ($app->permissions()['landing.manage'] ?? null) === 'landing.permission.manage'
     && $app->adminMenu() === [['label_key' => 'landing.admin.menu', 'path' => '/admin/landing', 'permission' => 'landing.manage', 'group' => 'content']]
     && $app->navigation() === [] && $app->footerLinks() === []);
+check('extension: the page is announced to Administration -> Export/Import, prefixed with its own id', isset($app->exportables()['landing.page'])
+    && $app->exportables()['landing.page']['label_key'] === 'landing.export.page');
+
+// --- The exportable's own export()/import() closures - the whole page, as App::addExportable() calls them ---
+$exportable = $app->exportables()['landing.page'];
+$exportablePage = new LandingPage($pdo);
+$exportablePage->save(true, ['de' => ['title' => 'Verkaufsseite', 'meta_description' => '']], [LandingPage::newBlock('hero')]);
+$roundTrip = ($exportable['export'])($app);
+check('exportable: export() is exactly LandingPage::get()', $roundTrip === $exportablePage->get());
+$exportablePage->save(false, [], []);
+check('exportable: sanity check before importing it back - the page is empty again', $exportablePage->get()['blocks'] === []);
+($exportable['import'])($roundTrip, $app);
+check('exportable: import() restores it through the very save() the form itself uses', $exportablePage->get()['published'] === true
+    && $exportablePage->get()['meta']['de']['title'] === 'Verkaufsseite' && count($exportablePage->get()['blocks']) === 1);
+check('exportable: import() of something that is not an array (a corrupted or foreign file) does nothing, does not throw', (function () use ($exportable, $app, $exportablePage) {
+    ($exportable['import'])('not-an-array', $app);
+    return $exportablePage->get()['published'] === true; // unchanged
+})());
+$exportablePage->save(false, [], []);
 
 // --- LandingPage: a fresh install has nothing, published is off ------------
 $page = new LandingPage($pdo);
@@ -314,7 +333,9 @@ foreach (LandingPage::BLOCK_TYPES as $type) {
     $used[] = 'landing.block.' . $type;
 }
 // "landing.manage" is the permission id, "landing.css" the stylesheet ext_asset() loads - neither is a language key.
-$unknown = array_diff(array_unique($used), array_keys($de), ['landing.manage', 'landing.css']);
+// "landing.manage" the permission id, "landing.css" the stylesheet, "landing.page" the
+// exportable key (App::addExportable()) - none of the three is a language key.
+$unknown = array_diff(array_unique($used), array_keys($de), ['landing.manage', 'landing.css', 'landing.page']);
 check('lang: every key used in templates and code exists: ' . implode(', ', $unknown), $unknown === []);
 
 if ($failed !== []) {

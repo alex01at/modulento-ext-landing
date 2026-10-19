@@ -9,6 +9,7 @@ return [
     'landing.admin.published' => 'Published (reachable at /landing)',
     'landing.admin.is_home' => 'Use as the start page (/ redirects here; makes it published automatically)',
     'landing.admin.draft_notice' => 'Draft - not published yet. Only you can see this page right now.',
+    'landing.export.page' => 'Landing page',
     'landing.admin.meta_title' => 'Page title',
     'landing.admin.meta_description' => 'Meta description',
     'landing.admin.add' => 'Add block',

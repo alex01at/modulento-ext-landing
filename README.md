@@ -36,11 +36,26 @@ addon and with the installation's one app.
 - Only the language the administration is currently in is edited at a time,
   like the core's own menu and home-page editors; switch language in the
   administration header to fill in another one.
+- The whole page - published or not, every block, every language - is one
+  of the sections **Administration → Export/Import** can write to a file
+  or read back, the core's own generic mechanism
+  (`Registrar::exportable()`); no mechanism of this addon's own.
+
+## A ready-made sales page
+
+`examples/landing-sales-page.json` is a finished page - a hero, a stats
+strip, three card grids (apps, addons, themes), a text section and a
+closing call to action, in German and English - written to sell Modulento
+itself as a product. Import it under **Administration → Export/Import**
+(it names only the `landing.page` section, so nothing else about the
+installation is touched) to get it as a starting point, then adjust the
+text and the two GitHub links to taste. It imports unpublished on purpose,
+so it can be reviewed before it goes live.
 
 ## Requirements
 
-Modulento 0.64.0 or newer (the `ext_asset()` Twig function this addon's
-stylesheet needs).
+Modulento 0.66.0 or newer (the export/import mechanism this addon's own
+page is a section of).
 
 ## Installing
 
