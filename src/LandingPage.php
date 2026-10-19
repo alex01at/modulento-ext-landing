@@ -53,6 +53,7 @@ final class LandingPage
         ],
         'cta' => [
             'heading' => 'text', 'text' => 'text', 'button_label' => 'text', 'button_url' => 'url',
+            'secondary_label' => 'text', 'secondary_url' => 'url',
         ],
     ];
 

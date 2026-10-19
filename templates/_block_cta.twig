@@ -1,11 +1,15 @@
-{# Receives block: heading, text, button_label/button_url. Heading and text are edited on the
-   spot; the button only through the "Bearbeiten" panel - see inline/_block.twig. #}
+{# Receives block: heading, text, button_label/button_url, secondary_label/secondary_url.
+   Heading and text are edited on the spot; both buttons only through the "Bearbeiten"
+   panel - see inline/_block.twig. #}
 <section class="landing-block landing-block-cta" data-landing-block="{{ block.id }}">
     <div class="landing-cta">
         <h2 data-field="heading">{{ block.heading }}</h2>
         {% if block.text or edit_mode %}<p data-field="text">{{ block.text }}</p>{% endif %}
-        {% if block.button_label and block.button_url %}
-            <a class="btn landing-btn-primary" href="{{ url(block.button_url) }}">{{ block.button_label }}</a>
+        {% if (block.button_label and block.button_url) or (block.secondary_label and block.secondary_url) %}
+            <div class="landing-buttons">
+                {% if block.button_label and block.button_url %}<a class="btn landing-btn-primary" href="{{ url(block.button_url) }}">{{ block.button_label }}</a>{% endif %}
+                {% if block.secondary_label and block.secondary_url %}<a class="btn landing-btn-ghost" href="{{ url(block.secondary_url) }}">{{ block.secondary_label }}</a>{% endif %}
+            </div>
         {% endif %}
     </div>
 </section>

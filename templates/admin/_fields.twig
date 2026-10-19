@@ -44,6 +44,8 @@
     {% include '@landing/admin/_field.twig' with {id: id, field: 'text', value: block.text[locale] ?? ''} only %}
     {% include '@landing/admin/_field.twig' with {id: id, field: 'button_label', value: block.button_label[locale] ?? ''} only %}
     {% include '@landing/admin/_field.twig' with {id: id, field: 'button_url', value: block.button_url ?? '', plain: true} only %}
+    {% include '@landing/admin/_field.twig' with {id: id, field: 'secondary_label', value: block.secondary_label[locale] ?? ''} only %}
+    {% include '@landing/admin/_field.twig' with {id: id, field: 'secondary_url', value: block.secondary_url ?? '', plain: true} only %}
 {% endif %}
 
 {# Not tied to any language, unlike every field above - a block's own look, the same idea the

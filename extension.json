@@ -1,7 +1,7 @@
 {
     "id": "landing",
     "name": "Landing page",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "requires": "0.67.0",
     "api": 1,
     "type": "addon",

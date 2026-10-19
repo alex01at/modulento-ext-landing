@@ -25,8 +25,8 @@
                         "en": "Self-Hosted · Open Source · GPL-3.0"
                     },
                     "heading": {
-                        "de": "Deine Plattform. Dein Code. Deine Regeln.",
-                        "en": "Your platform. Your code. Your rules."
+                        "de": "Eine eigene Plattform. Dein Server, dein Code, deine Regeln.",
+                        "en": "Your own platform. Your server, your code, your rules."
                     },
                     "subheading": {
                         "de": "Modulento ist der schlanke PHP-Kern für Vermittlungsplattformen - Angebote, Bestellungen, Zahlungen, Bewertungen. Keine Monatsmiete, keine Provision auf jede Transaktion, kein Shell-Zugriff für den laufenden Betrieb nötig.",
@@ -51,6 +51,42 @@
                     ]
                 },
                 {
+                    "id": "b8c9d0a1",
+                    "type": "cards",
+                    "enabled": true,
+                    "heading": { "de": "Ein Kern. Eine App. Beliebig viele Addons.", "en": "One core. One app. Any number of addons." },
+                    "intro": {
+                        "de": "Der Kern kennt Konten, Rollen, Inhalte und geplante Aufgaben - aber kein Geschäftsmodell. Das bringt eine App mit (immer nur eine aktiv), erweitert um beliebig viele Addons gleichzeitig.",
+                        "en": "The core knows accounts, roles, content and scheduled tasks - but no business model. That comes from an app (always exactly one active), extended by any number of addons at once."
+                    },
+                    "items": [
+                        { "tag": { "de": "Kern", "en": "Core" }, "heading": { "de": "Konten · Rollen · Inhalte · Zahlungen · Aufgaben", "en": "Accounts · roles · content · payments · tasks" }, "text": { "de": "Bestellungen laufen als Zustandsautomat mit Verlauf, Nachrichten und Fristen - ohne eigenes Geschäftsmodell.", "en": "Orders run as a state machine with history, messages and deadlines - with no business model of its own." } },
+                        { "tag": { "de": "App · genau eine aktiv", "en": "App · exactly one active" }, "heading": { "de": "Freelancer, Shop, Auktion, Card oder Blog", "en": "Freelancer, Shop, Auction, Card or Blog" }, "text": { "de": "Bestimmt, was verkauft oder gezeigt wird. Ein Wechsel schaltet die vorherige App ab, ihre Daten bleiben erhalten.", "en": "Decides what is sold or shown. Switching apps turns the old one off; its data stays." } },
+                        { "tag": { "de": "Addon · beliebig viele", "en": "Addon · any number" }, "heading": { "de": "FAQ, Newsletter, Bookmarks, Abos, Coupons", "en": "FAQ, Newsletter, Bookmarks, Subscriptions, Coupons" }, "text": { "de": "Laufen nebeneinander, unabhängig von der aktiven App.", "en": "Run side by side, independently of the active app." } },
+                        { "tag": { "de": "", "en": "" }, "heading": { "de": "", "en": "" }, "text": { "de": "", "en": "" } },
+                        { "tag": { "de": "", "en": "" }, "heading": { "de": "", "en": "" }, "text": { "de": "", "en": "" } },
+                        { "tag": { "de": "", "en": "" }, "heading": { "de": "", "en": "" }, "text": { "de": "", "en": "" } }
+                    ]
+                },
+                {
+                    "id": "c9d0a1b2",
+                    "type": "cards",
+                    "enabled": true,
+                    "heading": { "de": "Warum ein eigener Kern statt SaaS-Miete", "en": "Why a core of your own instead of renting SaaS" },
+                    "intro": {
+                        "de": "Drei Entscheidungen, die sich durch den ganzen Kern ziehen.",
+                        "en": "Three decisions that run through the whole core."
+                    },
+                    "items": [
+                        { "tag": { "de": "01", "en": "01" }, "heading": { "de": "Kein Shell-Zugriff nötig", "en": "No shell access needed" }, "text": { "de": "Installation, Updates, Erweiterungen aktivieren, Theme wechseln - alles im Browser.", "en": "Installing, updating, enabling extensions, switching themes - all in the browser." } },
+                        { "tag": { "de": "02", "en": "02" }, "heading": { "de": "Templates gehören nicht zum Kern", "en": "Templates are not part of the core" }, "text": { "de": "Der Kern liefert Daten, jede Seite wird von einem Theme gerendert - austauschbar, ohne PHP zu berühren.", "en": "The core hands data to templates; every page is rendered by a theme, swappable without touching PHP." } },
+                        { "tag": { "de": "03", "en": "03" }, "heading": { "de": "Jeder Text existiert pro Sprache", "en": "Every text exists per language" }, "text": { "de": "Von der Oberfläche bis zu E-Mails und Inhaltsseiten - nichts Sichtbares ist hart codiert.", "en": "From the interface down to e-mails and content pages - nothing visible is hardcoded." } },
+                        { "tag": { "de": "", "en": "" }, "heading": { "de": "", "en": "" }, "text": { "de": "", "en": "" } },
+                        { "tag": { "de": "", "en": "" }, "heading": { "de": "", "en": "" }, "text": { "de": "", "en": "" } },
+                        { "tag": { "de": "", "en": "" }, "heading": { "de": "", "en": "" }, "text": { "de": "", "en": "" } }
+                    ]
+                },
+                {
                     "id": "c3d4e5f6",
                     "type": "cards",
                     "enabled": true,
@@ -60,7 +96,7 @@
                         "en": "Exactly one app is active at a time and decides the business model. Switching apps turns the old one off; its data stays."
                     },
                     "items": [
-                        { "tag": { "de": "App", "en": "App" }, "heading": { "de": "Freelancer", "en": "Freelancer" }, "text": { "de": "Verwandelt den Katalog in einen Marktplatz für Dienstleistungen: feste Pakete mit Lieferzeit, Überarbeitungen und buchbaren Extras.", "en": "Turns the catalogue into a marketplace for services: fixed packages with delivery time, revisions and bookable extras." } },
+                        { "tag": { "de": "App", "en": "App" }, "heading": { "de": "Freelancer", "en": "Freelancer" }, "text": { "de": "Verwandelt den Katalog in einen Marktplatz für Dienstleistungen: feste Pakete (Basic/Standard/Premium) mit Lieferzeit, Überarbeitungen und buchbaren Extras.", "en": "Turns the catalogue into a marketplace for services: fixed packages (Basic/Standard/Premium) with delivery time, revisions and bookable extras." } },
                         { "tag": { "de": "App", "en": "App" }, "heading": { "de": "Shop", "en": "Shop" }, "text": { "de": "Ein klassischer Shop mit einem Anbieter: Produkte mit Varianten, ein Warenkorb über mehrere Produkte hinweg, ein Checkout.", "en": "A classic single-provider shop: products with variants, a cart spanning several of them, one checkout." } },
                         { "tag": { "de": "App", "en": "App" }, "heading": { "de": "Auktion", "en": "Auction" }, "text": { "de": "Verbindliche Gebote, automatische Verlängerung bei einem Last-Minute-Gebot, eine Bestellung, sobald die Zeit abläuft.", "en": "Binding bids, automatic anti-snipe extensions, an order once time runs out." } },
                         { "tag": { "de": "App", "en": "App" }, "heading": { "de": "Card", "en": "Card" }, "text": { "de": "Macht aus dem Profil eines Anbieters eine teilbare digitale Visitenkarte - mit QR-Code, vCard und nachverfolgten Kontaktlinks.", "en": "Turns a provider's profile into a shareable digital business card, with a QR code, vCard and click-tracked contact links." } },
@@ -79,10 +115,10 @@
                     },
                     "items": [
                         { "tag": { "de": "Addon", "en": "Addon" }, "heading": { "de": "FAQ", "en": "FAQ" }, "text": { "de": "Eine Seite mit häufigen Fragen, in der Administration verwaltet.", "en": "A frequently-asked-questions page, managed in the administration." } },
-                        { "tag": { "de": "Addon", "en": "Addon" }, "heading": { "de": "Newsletter", "en": "Newsletter" }, "text": { "de": "Double-Opt-in-Mailingliste samt Rundmail an alle Eingetragenen - ohne externen Dienst.", "en": "A double opt-in mailing list and a message to everyone on it - no outside service." } },
+                        { "tag": { "de": "Addon", "en": "Addon" }, "heading": { "de": "Newsletter", "en": "Newsletter" }, "text": { "de": "Double-Opt-in-Mailingliste samt Rundmail an alle Eingetragenen - über den eigenen Mail-Transport, ohne externen Dienst.", "en": "A double opt-in mailing list and a message to everyone on it - over the core's own mail transport, no outside service." } },
                         { "tag": { "de": "Addon", "en": "Addon" }, "heading": { "de": "Bookmarks", "en": "Bookmarks" }, "text": { "de": "Angemeldete Konten merken sich Angebote oder Anbieter und finden sie unter „Meine Favoriten“ wieder.", "en": "A logged-in account bookmarks an offer or a provider and finds them again under “My bookmarks”." } },
                         { "tag": { "de": "Addon", "en": "Addon" }, "heading": { "de": "Abos", "en": "Subscriptions" }, "text": { "de": "Abo-Pläne samt Abrechnung - die Erweiterung hinter der Abo-Schnittstelle des Kerns.", "en": "Subscription plans and their billing - the provider behind the core's own subscription facade." } },
-                        { "tag": { "de": "Addon", "en": "Addon" }, "heading": { "de": "Coupons", "en": "Coupons" }, "text": { "de": "Rabattcodes, von der Administration verwaltet: prozentual oder fest, mit Nutzungsgrenze und Mindestbestellwert.", "en": "Admin-managed discount codes: percentage or fixed, with a usage limit and a minimum order total." } },
+                        { "tag": { "de": "Addon", "en": "Addon" }, "heading": { "de": "Coupons", "en": "Coupons" }, "text": { "de": "Rabattcodes, von der Administration verwaltet: prozentual oder fest, mit Nutzungsgrenze, Zeitraum und Mindestbestellwert.", "en": "Admin-managed discount codes: percentage or fixed, with a usage limit, a date range and a minimum order total." } },
                         { "tag": { "de": "", "en": "" }, "heading": { "de": "", "en": "" }, "text": { "de": "", "en": "" } }
                     ]
                 },
@@ -96,23 +132,27 @@
                         "en": "Every theme is swappable without touching PHP. The default theme always comes along."
                     },
                     "items": [
-                        { "tag": { "de": "Theme", "en": "Theme" }, "heading": { "de": "Default", "en": "Default" }, "text": { "de": "Der mitgelieferte Marktplatz-Look: Suche, Kategorie-Kacheln und eine Anbieter-Vitrine.", "en": "The marketplace look Modulento ships with: search, category tiles and a provider showcase." } },
+                        { "tag": { "de": "Theme", "en": "Theme" }, "heading": { "de": "Default", "en": "Default" }, "text": { "de": "Der mitgelieferte Marktplatz-Look: helle Karten auf blassem Grund, Suche, Kategorie-Kacheln und eine Anbieter-Vitrine.", "en": "The marketplace look Modulento ships with: light cards on a pale ground, search, category tiles and a provider showcase." } },
                         { "tag": { "de": "Theme", "en": "Theme" }, "heading": { "de": "Indigo", "en": "Indigo" }, "text": { "de": "Hell und großzügig: weiße Karten auf blassem Grund, Indigo als einziger Akzent.", "en": "Light and roomy: white cards on a pale ground, indigo as the one accent." } },
-                        { "tag": { "de": "Theme", "en": "Theme" }, "heading": { "de": "Audigo", "en": "Audigo" }, "text": { "de": "Dunkel und dramatisch für ein Auktionshaus - mit Live-Anzeige und Gebotskarten.", "en": "Dark and dramatic for an auction house - with a live sign and lot cards." } },
-                        { "tag": { "de": "Theme", "en": "Theme" }, "heading": { "de": "Card", "en": "Card" }, "text": { "de": "Ein klarer, vertrauenswürdiger SaaS-Look, gebaut für die Card-App.", "en": "A clean, trustworthy SaaS look, built for the Card app." } },
+                        { "tag": { "de": "Theme", "en": "Theme" }, "heading": { "de": "Audigo", "en": "Audigo" }, "text": { "de": "Dunkel und dramatisch für ein Auktionshaus - mit Live-Anzeige und Gebotskarten, die den aktuellen Preis zeigen.", "en": "Dark and dramatic for an auction house - with a live sign and lot cards that show the current price." } },
+                        { "tag": { "de": "Theme", "en": "Theme" }, "heading": { "de": "Card", "en": "Card" }, "text": { "de": "Ein klarer, vertrauenswürdiger SaaS-Look, gebaut für die Card-App - funktioniert aber mit jeder Installation.", "en": "A clean, trustworthy SaaS look, built for the Card app - but works with any installation." } },
                         { "tag": { "de": "Theme", "en": "Theme" }, "heading": { "de": "Merchigo", "en": "Merchigo" }, "text": { "de": "Warm und ruhig in Sand und Terrakotta, gebaut für die Shop-App.", "en": "Warm and calm in sand and terracotta, built for the Shop app." } },
                         { "tag": { "de": "", "en": "" }, "heading": { "de": "", "en": "" }, "text": { "de": "", "en": "" } }
                     ]
                 },
                 {
                     "id": "f6a7b8c9",
-                    "type": "text",
+                    "type": "stats",
                     "enabled": true,
                     "heading": { "de": "Ohne Umwege gebaut", "en": "Built without detours" },
-                    "body": {
-                        "de": "<p>Plain PHP, kein Framework, kein Build-Schritt - was auf jedem gewöhnlichen Webhosting läuft.</p><ul><li>PHP ≥ 8.3, Twig, MariaDB/MySQL, vanilla JS/CSS</li><li>Zahlungsabwicklung: Überweisung, PayPal, Stripe</li><li><span style=\"color: #2f6b4f\">0&nbsp;% Provision</span> - Käufer zahlt direkt</li><li>Lizenz: <span style=\"color: #2f6b4f\">GPL-3.0-or-later</span></li><li>Kein Shell-Zugriff für den Betrieb nötig</li></ul>",
-                        "en": "<p>Plain PHP, no framework, no build step - what runs on any ordinary web host.</p><ul><li>PHP ≥ 8.3, Twig, MariaDB/MySQL, vanilla JS/CSS</li><li>Payment: bank transfer, PayPal, Stripe</li><li><span style=\"color: #2f6b4f\">0&nbsp;% commission</span> - the buyer pays directly</li><li>License: <span style=\"color: #2f6b4f\">GPL-3.0-or-later</span></li><li>No shell access needed to run it</li></ul>"
-                    }
+                    "items": [
+                        { "value": "PHP ≥ 8.3", "label": { "de": "Sprache", "en": "Language" } },
+                        { "value": "MariaDB / MySQL", "label": { "de": "Datenbank", "en": "Database" } },
+                        { "value": "Überweisung, PayPal, Stripe", "label": { "de": "Zahlungsabwicklung", "en": "Payment" } },
+                        { "value": "0 % - Käufer zahlt direkt", "label": { "de": "Provision der Plattform", "en": "Platform commission" } },
+                        { "value": "GPL-3.0-or-later", "label": { "de": "Lizenz", "en": "License" } },
+                        { "value": "kein Shell-Zugriff nötig", "label": { "de": "Betrieb", "en": "Operation" } }
+                    ]
                 },
                 {
                     "id": "a7b8c9d0",
@@ -120,11 +160,13 @@
                     "enabled": true,
                     "heading": { "de": "Bereit, deine eigene Plattform aufzusetzen?", "en": "Ready to set up your own platform?" },
                     "text": {
-                        "de": "Lade ein Release herunter und installiere es auf gewöhnlichem Webhosting - kein Shell-Zugriff nötig.",
-                        "en": "Download a release and install it on ordinary web hosting - no shell access needed."
+                        "de": "Lade ein Release herunter und installiere es auf gewöhnlichem Webhosting - oder sieh dir vorher den Code an.",
+                        "en": "Download a release and install it on ordinary web hosting - or take a look at the code first."
                     },
                     "button_label": { "de": "Release herunterladen", "en": "Download a release" },
                     "button_url": "https://github.com/alex01at/modulento/releases",
+                    "secondary_label": { "de": "Code ansehen", "en": "View the code" },
+                    "secondary_url": "https://github.com/alex01at/modulento",
                     "settings": { "background_type": "color", "background_color": "#15201a", "text_color": "#ffffff", "font": "serif" }
                 }
             ]

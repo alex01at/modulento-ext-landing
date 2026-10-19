@@ -163,3 +163,12 @@
 .landing-cta .btn {
     margin-top: 1.5rem;
 }
+
+.landing-cta .landing-buttons {
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.landing-cta .landing-buttons .btn {
+    margin-top: 0;
+}
